@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity, Dimensions, Platform } from '
 import LinearGradient from 'react-native-linear-gradient';
 import { MessageCircle, Pill, Search, MapPin, ChevronRight, HeartPulse } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
-import type { StackNavigationProp } from '@react-navigation/stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParams } from '../navigation';
 
 const { height } = Dimensions.get('window');
@@ -16,7 +16,7 @@ const FEATURES = [
 ];
 
 export default function WelcomeScreen() {
-  const navigation = useNavigation<StackNavigationProp<RootStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParams>>();
 
   return (
     <View style={{ flex: 1 }}>

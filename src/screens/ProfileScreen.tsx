@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { User, Settings, Bell, Shield, LogOut } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
-import type { StackNavigationProp } from '@react-navigation/stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getSession, logout, type UserSession } from '../../lib/auth';
 import type { RootStackParams } from '../navigation';
 
@@ -14,7 +14,7 @@ const MENU_ITEMS = [
 ];
 
 export default function ProfileScreen() {
-  const navigation = useNavigation<StackNavigationProp<RootStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParams>>();
   const [user, setUser] = useState<UserSession | null>(null);
 
   useEffect(() => {

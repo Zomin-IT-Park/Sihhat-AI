@@ -4,7 +4,7 @@ import {
   ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import type { StackNavigationProp } from '@react-navigation/stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ChevronLeft, User, Users, Lock, Eye, EyeOff, AtSign } from 'lucide-react-native';
 import { register } from '../../lib/auth';
 import Toast from '../components/Toast';
@@ -21,7 +21,7 @@ function validateUsername(u: string): string | null {
 }
 
 export default function SignUpScreen() {
-  const navigation = useNavigation<StackNavigationProp<RootStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParams>>();
 
   const [firstName, setFirstName]             = useState('');
   const [lastName, setLastName]               = useState('');

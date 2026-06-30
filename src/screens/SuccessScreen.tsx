@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import type { StackNavigationProp } from '@react-navigation/stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Check } from 'lucide-react-native';
 import type { RootStackParams } from '../navigation';
 
@@ -23,7 +23,7 @@ const DOTS = [
 ];
 
 export default function SuccessScreen() {
-  const navigation = useNavigation<StackNavigationProp<RootStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParams>>();
 
   return (
     <View style={styles.container}>

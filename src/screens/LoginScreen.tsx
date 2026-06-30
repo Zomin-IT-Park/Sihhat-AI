@@ -4,7 +4,7 @@ import {
   KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import type { StackNavigationProp } from '@react-navigation/stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ChevronLeft, AtSign, Lock, Eye, EyeOff } from 'lucide-react-native';
 import { login } from '../../lib/auth';
 import Toast from '../components/Toast';
@@ -13,7 +13,7 @@ import type { RootStackParams } from '../navigation';
 const GREEN = '#1B6B3E';
 
 export default function LoginScreen() {
-  const navigation = useNavigation<StackNavigationProp<RootStackParams>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParams>>();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
