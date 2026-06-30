@@ -39,6 +39,46 @@ declare module 'lucide-react-native' {
   export const LogOut: LucideIcon;
   export const Sparkle: LucideIcon;
   export const ShoppingBag: LucideIcon;
+  export const Navigation: LucideIcon;
+}
+
+declare module 'react-native-geolocation-service' {
+  interface GeoPosition {
+    coords: {
+      latitude: number;
+      longitude: number;
+      accuracy: number | null;
+      altitude: number | null;
+      heading: number | null;
+      speed: number | null;
+    };
+    timestamp: number;
+  }
+
+  interface GeoOptions {
+    timeout?: number;
+    enableHighAccuracy?: boolean;
+    maximumAge?: number;
+    distanceFilter?: number;
+    interval?: number;
+  }
+
+  type GeoCallback = (position: GeoPosition) => void;
+  type GeoErrorCallback = (error: any) => void;
+
+  export function getCurrentPosition(
+    success: GeoCallback,
+    error?: GeoErrorCallback,
+    options?: GeoOptions,
+  ): void;
+
+  export function watchPosition(
+    success: GeoCallback,
+    error?: GeoErrorCallback,
+    options?: GeoOptions,
+  ): number;
+
+  export function clearWatch(id: number): void;
 }
 
 declare module '@env' {
