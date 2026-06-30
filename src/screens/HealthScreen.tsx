@@ -1,36 +1,77 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View, TextInput, TouchableOpacity, Animated,
   KeyboardAvoidingView, Platform, StatusBar, Keyboard,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { Plus, Image, FileText, X, Send } from 'lucide-react-native';
+import type { MainTabParams } from '../navigation'; // from src/screens/ to src/navigation/
 
 const GREEN = '#1B6B3E';
 const KEYBOARD_GAP = 38;
+const TYPING_SPEED = 70;
+const DELETE_SPEED = 40;
+const PAUSE_AFTER_TYPING = 2000;
+const PAUSE_AFTER_DELETE = 500;
 
-const placeholders = [
-  "Sog'lig'ingiz haqida so'rang...",
-  'Qanday yordam kerak?',
-  'Belgilaringizni yozing...',
+const TEXTS = [
+  'Sanatoriya nomini yozing...',
+  'Qaysi viloyat qiziqtiradi?',
+  "Misol: 'Bel og'rig'iga qaysi sanatoriya yaxshi?'",
 ];
 
 export default function HealthScreen() {
+  const navigation = useNavigation<BottomTabNavigationProp<MainTabParams>>();
   const [query, setQuery] = useState('');
   const [showActions, setShowActions] = useState(false);
-  const [placeholder, setPlaceholder] = useState(placeholders[0]);
+  const [displayText, setDisplayText] = useState('');
   const [keyboardOffset, setKeyboardOffset] = useState(0);
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const inputRef = useRef<TextInput>(null);
+  const textIdx = useRef(0);
+  const charIdx = useRef(0);
+  const isDeleting = useRef(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const stopAnimation = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
+  const startAnimation = useCallback(() => {
+    stopAnimation();
+
+    const currentText = TEXTS[textIdx.current];
+
+    if (!isDeleting.current) {
+      charIdx.current++;
+      setDisplayText(currentText.slice(0, charIdx.current));
+      if (charIdx.current >= currentText.length) {
+        isDeleting.current = true;
+        timerRef.current = setTimeout(startAnimation, PAUSE_AFTER_TYPING);
+      } else {
+        timerRef.current = setTimeout(startAnimation, TYPING_SPEED);
+      }
+    } else {
+      charIdx.current--;
+      setDisplayText(currentText.slice(0, charIdx.current));
+      if (charIdx.current <= 0) {
+        isDeleting.current = false;
+        textIdx.current = (textIdx.current + 1) % TEXTS.length;
+        timerRef.current = setTimeout(startAnimation, PAUSE_AFTER_DELETE);
+      } else {
+        timerRef.current = setTimeout(startAnimation, DELETE_SPEED);
+      }
+    }
+  }, [stopAnimation]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setPlaceholder(prev => {
-        const idx = placeholders.indexOf(prev);
-        return placeholders[(idx + 1) % placeholders.length];
-      });
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
+    const delay = setTimeout(startAnimation, 500);
+    return () => { clearTimeout(delay); stopAnimation(); };
+  }, [startAnimation, stopAnimation]);
 
   useEffect(() => {
     const show = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', (e) => {
@@ -56,6 +97,8 @@ export default function HealthScreen() {
     inputRange: [0, 1],
     outputRange: [0, 1],
   });
+
+  const showTyping = !query.trim();
 
   return (
     <KeyboardAvoidingView
@@ -134,18 +177,24 @@ export default function HealthScreen() {
               color: '#111827',
               paddingHorizontal: 4,
             }}
-            placeholder={placeholder}
+            placeholder={showTyping ? displayText : ''}
             placeholderTextColor="#9CA3AF"
             value={query}
             onChangeText={setQuery}
             returnKeyType="search"
           />
 
-          <TouchableOpacity style={{
-            width: 40, height: 40, borderRadius: 14,
-            backgroundColor: query.trim() ? GREEN : '#E5E7EB',
-            alignItems: 'center', justifyContent: 'center',
-          }}>
+          <TouchableOpacity
+            onPress={() => {
+              if (!query.trim()) return;
+              navigation.navigate('Chat');
+            }}
+            style={{
+              width: 40, height: 40, borderRadius: 14,
+              backgroundColor: query.trim() ? GREEN : '#E5E7EB',
+              alignItems: 'center', justifyContent: 'center',
+            }}
+          >
             <Send size={18} color={query.trim() ? '#FFFFFF' : '#9CA3AF'} strokeWidth={2.2} />
           </TouchableOpacity>
         </View>

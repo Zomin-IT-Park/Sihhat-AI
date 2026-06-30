@@ -44,6 +44,8 @@ declare module 'lucide-react-native' {
   export const Image: LucideIcon;
   export const FileText: LucideIcon;
   export const X: LucideIcon;
+  export const Phone: LucideIcon;
+  export const AlertTriangle: LucideIcon;
 }
 
 declare module 'react-native-geolocation-service' {
