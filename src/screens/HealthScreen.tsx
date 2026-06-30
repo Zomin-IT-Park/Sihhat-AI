@@ -1,8 +1,7 @@
-import React, { useCallback, useContext, useRef } from 'react';
+import React from 'react';
 import { StyleSheet, View, Text, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Heart, Activity, Droplets, Moon } from 'lucide-react-native';
-import { TabBarContext } from '../navigation';
 
 const HEALTH_DATA = [
   { id: '1', title: 'Yurak urishi', value: '72', unit: 'bpm', icon: Heart, color: '#FF3B30' },
@@ -12,27 +11,13 @@ const HEALTH_DATA = [
 ];
 
 export default function HealthScreen() {
-  const { setVisible } = useContext(TabBarContext);
-  const lastY = useRef(0);
-
-  const onScroll = useCallback((e: any) => {
-    const y = e.nativeEvent.contentOffset.y;
-    if (y > lastY.current && y > 50) {
-      setVisible(false);
-    } else if (y < lastY.current || y <= 0) {
-      setVisible(true);
-    }
-    lastY.current = y;
-  }, [setVisible]);
-
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Salomatlik</Text>
       </View>
-      <ScrollView style={styles.content}
-        onScroll={onScroll} scrollEventThrottle={16}>
-        <Text style={styles.greeting}>Xayrli kun! 👋</Text>
+      <ScrollView style={styles.content}>
+        <Text style={styles.greeting}>Xayrli kun!</Text>
         <Text style={styles.subtitle}>Bugungi salomatlik ko'rsatkichlaringiz</Text>
         {HEALTH_DATA.map((item) => (
           <View key={item.id} style={styles.card}>
@@ -49,7 +34,7 @@ export default function HealthScreen() {
           </View>
         ))}
         <View style={styles.tipCard}>
-          <Text style={styles.tipTitle}>💡 Maslahat</Text>
+          <Text style={styles.tipTitle}>Maslahat</Text>
           <Text style={styles.tipText}>
             Har kuni kamida 8 stakan suv ichishni unutmang. Suv tanqisligi ko'pchilik muammolarning sababidir.
           </Text>

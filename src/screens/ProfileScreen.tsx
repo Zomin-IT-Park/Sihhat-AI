@@ -1,11 +1,11 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { User, Settings, Bell, Shield, LogOut } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getSession, logout, type UserSession } from '../../lib/auth';
-import { TabBarContext, type RootStackParams } from '../navigation';
+import type { RootStackParams } from '../navigation';
 
 const MENU_ITEMS = [
   { id: '1', title: 'Sozlamalar', icon: Settings },
@@ -16,8 +16,6 @@ const MENU_ITEMS = [
 export default function ProfileScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParams>>();
   const [user, setUser] = useState<UserSession | null>(null);
-  const { setVisible } = useContext(TabBarContext);
-  const lastY = useRef(0);
 
   useEffect(() => {
     getSession().then(setUser);
@@ -28,25 +26,13 @@ export default function ProfileScreen() {
     navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] });
   }
 
-  const onScroll = useCallback((e: any) => {
-    const y = e.nativeEvent.contentOffset.y;
-    if (y > lastY.current && y > 50) {
-      setVisible(false);
-    } else if (y < lastY.current || y <= 0) {
-      setVisible(true);
-    }
-    lastY.current = y;
-  }, [setVisible]);
-
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Profil</Text>
       </View>
 
-      <ScrollView style={styles.content}
-        onScroll={onScroll} scrollEventThrottle={16}
-        contentContainerStyle={{ paddingBottom: 32 }}>
+      <View style={styles.content}>
         <View style={styles.avatarSection}>
           <View style={styles.avatar}>
             <User size={48} color="#8E8E93" />
@@ -72,7 +58,7 @@ export default function ProfileScreen() {
           <LogOut size={20} color="#FF3B30" />
           <Text style={styles.logoutText}>Chiqish</Text>
         </TouchableOpacity>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }

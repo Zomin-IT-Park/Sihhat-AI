@@ -1,8 +1,7 @@
-import React, { useCallback, useContext, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View, Text, TextInput, FlatList, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Send } from 'lucide-react-native';
-import { TabBarContext } from '../navigation';
 
 type Message = { id: string; text: string; isBot: boolean };
 
@@ -13,8 +12,6 @@ const INITIAL_MESSAGES: Message[] = [
 export default function ChatScreen() {
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [inputText, setInputText] = useState('');
-  const { setVisible } = useContext(TabBarContext);
-  const lastY = useRef(0);
 
   function sendMessage() {
     if (!inputText.trim()) return;
@@ -22,16 +19,6 @@ export default function ChatScreen() {
     setMessages(prev => [...prev, userMsg]);
     setInputText('');
   }
-
-  const onScroll = useCallback((e: any) => {
-    const y = e.nativeEvent.contentOffset.y;
-    if (y > lastY.current && y > 50) {
-      setVisible(false);
-    } else if (y < lastY.current || y <= 0) {
-      setVisible(true);
-    }
-    lastY.current = y;
-  }, [setVisible]);
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.container}>
@@ -50,8 +37,6 @@ export default function ChatScreen() {
             </Text>
           </View>
         )}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
       />
 
       <View style={styles.inputContainer}>
