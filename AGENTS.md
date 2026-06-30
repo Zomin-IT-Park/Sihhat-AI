@@ -1,7 +1,7 @@
 # Sihhat-AI - Expo/React Native Tibbiy AI Ilova
 
 ## Loyiha haqida
-Sihhat-AI - sun'iy intellekt yordamda sog'lig'ingiz haqida g'amxo'rlik qiladigan tibbiy ilova. Expo SDK 52 + Expo Router + React Native.
+Sihhat-AI - sun'iy intellekt yordamida sog'lig'ingiz haqida g'amxo'rlik qiladigan tibbiy ilova. Expo SDK 52 + Expo Router + React Native.
 
 ## Expo MUHIM
 Read the exact versioned docs at https://docs.expo.dev before writing any code. Expo SDK 52 ishlatilmoqda.

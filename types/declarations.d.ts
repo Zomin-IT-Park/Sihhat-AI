@@ -41,3 +41,8 @@ declare module 'lucide-react-native' {
   export const LogOut: LucideIcon;
   export const Mail: LucideIcon;
 }
+
+declare module '@env' {
+  export const SUPABASE_URL: string;
+  export const SUPABASE_ANON_KEY: string;
+}
