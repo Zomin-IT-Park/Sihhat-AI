@@ -1,6 +1,6 @@
 import React from 'react';
 import { BackHandler, Platform } from 'react-native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useFocusEffect } from '@react-navigation/native';
 import { Home, MessageCircle, Pill, User } from 'lucide-react-native';
@@ -29,7 +29,7 @@ export type MainTabParams = {
   Profile: undefined;
 };
 
-const Stack = createStackNavigator<RootStackParams>();
+const Stack = createNativeStackNavigator<RootStackParams>();
 const Tab = createBottomTabNavigator<MainTabParams>();
 
 const GREEN = '#1B6B3E';
