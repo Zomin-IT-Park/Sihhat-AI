@@ -23,8 +23,6 @@ declare module 'lucide-react-native' {
   export const Bell: LucideIcon;
   export const Bot: LucideIcon;
   export const TreeDeciduous: LucideIcon;
-  export const Clock: LucideIcon;
-  export const Navigation: LucideIcon;
   export const Send: LucideIcon;
   export const AtSign: LucideIcon;
   export const Lock: LucideIcon;
@@ -39,7 +37,6 @@ declare module 'lucide-react-native' {
   export const Settings: LucideIcon;
   export const Shield: LucideIcon;
   export const LogOut: LucideIcon;
-  export const Mail: LucideIcon;
 }
 
 declare module '@env' {

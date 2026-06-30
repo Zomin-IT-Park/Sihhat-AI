@@ -19,7 +19,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState({ visible: false, message: '' });
+  const [toast, setToast] = useState({ visible: false, message: '', type: 'error' as 'error' | 'success' });
 
   const canLogin = username.trim().length >= 3 && password.length >= 6 && !loading;
 

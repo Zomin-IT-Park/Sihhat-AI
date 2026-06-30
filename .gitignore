@@ -1,12 +1,9 @@
 node_modules/
-.expo/
-dist/
-web-build/
 
-# Environment variables — NEVER commit!
-.env
-.env.local
-.env.production
+
+
+
+
 
 # OS
 .DS_Store

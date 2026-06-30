@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StatusBar, PermissionsAndroid, Platform } from 'react-native';
+import { StatusBar, PermissionsAndroid, Platform, View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -27,7 +27,13 @@ export default function App() {
     }).catch(() => setInitialRoute('Welcome'));
   }, []);
 
-  if (!initialRoute) return null;
+  if (!initialRoute) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#0D4830', alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator size="large" color="#FFFFFF" />
+      </View>
+    );
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

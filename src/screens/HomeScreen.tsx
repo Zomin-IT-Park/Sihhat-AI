@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   StyleSheet, View, Text, TouchableOpacity, ScrollView,
-  Dimensions, Platform,
+  Platform,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Bell, Bot, TreeDeciduous, User } from 'lucide-react-native';
