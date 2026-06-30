@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   StyleSheet, View, Text, TextInput, FlatList, TouchableOpacity,
-  KeyboardAvoidingView, Platform, Animated, StatusBar, Pressable, Image, Linking,
+  KeyboardAvoidingView, Platform, Animated, StatusBar, Pressable, Image as RNImage, Linking,
 } from 'react-native';
+import { Send, Sparkle, MapPin, Phone, AlertTriangle, Plus, Image as LucideImage, FileText, X } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Send, Sparkle, MapPin, Phone, AlertTriangle } from 'lucide-react-native';
 import { sendChatMessage, type ChatResponse, type SanatoriumItem } from '../../lib/chat';
 
 type Message = {
@@ -38,6 +38,16 @@ export default function ChatScreen() {
   }, [loading, dotAnim]);
 
   const [inputText, setInputText] = useState('');
+  const [showAttach, setShowAttach] = useState(false);
+  const attachAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.spring(attachAnim, {
+      toValue: showAttach ? 1 : 0,
+      useNativeDriver: true,
+      friction: 6,
+    }).start();
+  }, [showAttach, attachAnim]);
 
   const dotScale = dotAnim.interpolate({
     inputRange: [0, 1],
@@ -89,7 +99,7 @@ export default function ChatScreen() {
                 {item.sanatoriums.map((s, i) => (
                   <View key={i} style={styles.card}>
                     {s.image_url ? (
-                      <Image source={{ uri: s.image_url }} style={styles.cardImage} resizeMode="cover" />
+                      <RNImage source={{ uri: s.image_url }} style={styles.cardImage} resizeMode="cover" />
                     ) : null}
                     <View style={styles.cardHeader}>
                       <Text style={styles.cardName}>{s.name}</Text>
@@ -144,11 +154,35 @@ export default function ChatScreen() {
       />
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior="padding"
         keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
       >
         <View style={styles.inputBar}>
+          {showAttach && (
+            <Animated.View style={[styles.attachRow, { opacity: attachAnim }]}>
+              <Pressable style={styles.attachBtn}>
+                <View style={[styles.attachCircle, { backgroundColor: '#8B5CF6' }]}>
+                  <LucideImage size={20} color="#FFFFFF" strokeWidth={2} />
+                </View>
+              </Pressable>
+              <Pressable style={styles.attachBtn}>
+                <View style={[styles.attachCircle, { backgroundColor: '#3B82F6' }]}>
+                  <FileText size={20} color="#FFFFFF" strokeWidth={2} />
+                </View>
+              </Pressable>
+            </Animated.View>
+          )}
           <View style={styles.inputRow}>
+            <Pressable
+              onPress={() => setShowAttach(v => !v)}
+              style={[styles.plusBtn, showAttach && styles.plusBtnActive]}
+            >
+              {showAttach ? (
+                <X size={20} color="#FFFFFF" strokeWidth={2.5} />
+              ) : (
+                <Plus size={20} color="#1B6B3E" strokeWidth={2.5} />
+              )}
+            </Pressable>
             <TextInput
               style={styles.input}
               placeholder="Xabar yozing..."
@@ -188,9 +222,8 @@ export default function ChatScreen() {
                 if (!txt) return;
                 inputVal.current = '';
                 setInputText('');
-                const msgId = Date.now().toString();
                 setMessages(prev => [...prev,
-                  { id: msgId, text: txt, isBot: false },
+                  { id: Date.now().toString(), text: txt, isBot: false },
                   { id: 'loading', isBot: true, loading: true },
                 ]);
                 sendChatMessage(txt).then(res => {
@@ -280,16 +313,29 @@ const styles = StyleSheet.create({
   },
   disclaimerText: { fontSize: 11, color: '#92400E', flex: 1, lineHeight: 16 },
   inputBar: {
-    backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 12, paddingTop: 8,
     paddingBottom: Platform.OS === 'ios' ? 120 : 100,
   },
-  inputRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 12, paddingVertical: 8, alignItems: 'center' },
+  attachRow: { flexDirection: 'row', gap: 16, paddingHorizontal: 4, paddingBottom: 10 },
+  attachBtn: { alignItems: 'center' },
+  attachCircle: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
+  inputRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    backgroundColor: '#FFFFFF', borderRadius: 18,
+    paddingHorizontal: 6, paddingVertical: 6,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 6,
+  },
+  plusBtn: {
+    width: 40, height: 40, borderRadius: 14,
+    backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center',
+  },
+  plusBtnActive: { backgroundColor: '#1B6B3E' },
   input: {
-    flex: 1, height: 44, backgroundColor: '#F3F4F6', borderRadius: 22,
-    paddingHorizontal: 18, fontSize: 15, color: '#111827',
+    flex: 1, height: 44, fontSize: 15, color: '#111827', paddingHorizontal: 4,
   },
   sendBtn: {
-    width: 44, height: 44, borderRadius: 22,
+    width: 40, height: 40, borderRadius: 14,
     backgroundColor: '#1B6B3E', alignItems: 'center', justifyContent: 'center',
   },
   sendBtnDisabled: { backgroundColor: '#D1D5DB' },
