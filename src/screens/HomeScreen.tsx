@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Platform,
   ScrollView,
@@ -9,11 +9,12 @@ import {
   View,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { Bell, User, Search, MapPin, TreeDeciduous, MessageCircle, ShoppingBag } from 'lucide-react-native';
+import { Bell, User, Search, MapPin, TreeDeciduous, MessageCircle, ShoppingBag, Navigation } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { getSession, type UserSession } from '../../lib/auth';
 import type { MainTabParams } from '../navigation';
+import { getAddressFromCoords, getCurrentPosition, requestAllPermissions, watchPosition, clearWatch } from '../../lib/location';
 
 const categories = [
   { icon: MapPin, label: 'Joylar', color: '#075E45' },
@@ -31,9 +32,28 @@ const services = [
 export default function HomeScreen() {
   const navigation = useNavigation<BottomTabNavigationProp<MainTabParams>>();
   const [session, setSession] = useState<UserSession | null>(null);
+  const [address, setAddress] = useState<string>('');
+  const watchId = useRef<number | null>(null);
 
   useEffect(() => {
     getSession().then(setSession);
+    requestAllPermissions();
+
+    getCurrentPosition().then(async (coords) => {
+      if (coords) {
+        const addr = await getAddressFromCoords(coords.latitude, coords.longitude);
+        setAddress(addr);
+      }
+    });
+
+    watchId.current = watchPosition(async (coords) => {
+      const addr = await getAddressFromCoords(coords.latitude, coords.longitude);
+      setAddress(addr);
+    });
+
+    return () => {
+      clearWatch(watchId.current);
+    };
   }, []);
 
   return (
