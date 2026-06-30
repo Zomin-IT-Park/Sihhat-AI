@@ -1,9 +1,10 @@
 import React from 'react';
 import { BackHandler, Platform, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator, type BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useFocusEffect } from '@react-navigation/native';
-import { Home, MessageCircle, Search, User } from 'lucide-react-native';
+import { Home, MessageCircle, Search, User, ShoppingBag } from 'lucide-react-native';
 
 import WelcomeScreen from '../screens/WelcomeScreen';
 import LoginScreen from '../screens/LoginScreen';
@@ -12,6 +13,7 @@ import SuccessScreen from '../screens/SuccessScreen';
 import HomeScreen from '../screens/HomeScreen';
 import ChatScreen from '../screens/ChatScreen';
 import HealthScreen from '../screens/HealthScreen';
+import OrdersScreen from '../screens/OrdersScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
 export type RootStackParams = {
@@ -26,6 +28,7 @@ export type MainTabParams = {
   Home: undefined;
   Chat: undefined;
   Health: undefined;
+  Orders: undefined;
   Profile: undefined;
 };
 
@@ -34,12 +37,13 @@ const Tab = createBottomTabNavigator<MainTabParams>();
 
 const INACTIVE = '#9CA3AF';
 const ICONS: Record<string, typeof Home> = {
-  Home, Chat: MessageCircle, Health: Search, Profile: User,
+  Home, Chat: MessageCircle, Health: Search, Orders: ShoppingBag, Profile: User,
 };
 const LABELS: Record<string, string> = {
   Home: 'Bosh sahifa',
   Chat: 'AI dan maslahat',
   Health: 'Qidiruv',
+  Orders: 'Buyurtmalarim',
   Profile: 'Profil',
 };
 
@@ -63,7 +67,14 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           return (
             <TouchableOpacity key={route.key} style={customTab.item} activeOpacity={0.7} onPress={onPress}>
               <View style={customTab.iconWrap}>
-                {isFocused && <View style={customTab.activeBg} />}
+                {isFocused && (
+                  <LinearGradient
+                    colors={['rgba(7, 94, 69, 0.85)', 'rgba(245, 200, 66, 0.7)']}
+                    start={{ x: 0, y: 1 }}
+                    end={{ x: 1, y: 0 }}
+                    style={customTab.activeBg}
+                  />
+                )}
                 <Icon size={isFocused ? 24 : 22} color={isFocused ? '#FFFFFF' : INACTIVE} strokeWidth={isFocused ? 2.5 : 1.8} />
               </View>
               <Text style={[customTab.label, isFocused && customTab.labelActive]}>{label}</Text>
@@ -113,15 +124,14 @@ const customTab = StyleSheet.create({
   },
   activeBg: {
     position: 'absolute',
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#075E45',
-    shadowColor: '#075E45',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.35,
-    shadowRadius: 6,
-    elevation: 6,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    shadowColor: '#F5C842',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 16,
+    elevation: 10,
   },
   label: {
     fontSize: 11,
@@ -151,6 +161,7 @@ function MainTabs() {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Chat" component={ChatScreen} />
       <Tab.Screen name="Health" component={HealthScreen} />
+      <Tab.Screen name="Orders" component={OrdersScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );

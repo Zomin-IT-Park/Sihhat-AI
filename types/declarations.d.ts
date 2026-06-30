@@ -38,6 +38,7 @@ declare module 'lucide-react-native' {
   export const Shield: LucideIcon;
   export const LogOut: LucideIcon;
   export const Sparkle: LucideIcon;
+  export const ShoppingBag: LucideIcon;
 }
 
 declare module '@env' {
