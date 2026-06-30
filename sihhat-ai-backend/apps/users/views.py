@@ -1,35 +1,95 @@
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from django.contrib.auth import authenticate
-from django.contrib.auth.models import User
-from .serializers import UserSerializer
+from apps.utils.supabase_client import get_supabase
+
+
+def _call_rpc(client, fn: str, params: dict) -> dict | None:
+    try:
+        resp = client.rpc(fn, params).execute()
+        return resp.data if isinstance(resp.data, dict) else None
+    except Exception:
+        return None
 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request):
-    username = request.data.get('username')
-    password = request.data.get('password')
-    user = authenticate(username=username, password=password)
-    if user:
-        return Response({'user': UserSerializer(user).data, 'message': 'OK'})
-    return Response({'error': 'Invalid credentials'}, status=401)
+    client = get_supabase()
+    if not client:
+        return Response({'error': 'Supabase not configured'}, status=503)
+
+    result = _call_rpc(client, 'login_user', {
+        'p_username': request.data.get('username', ''),
+        'p_password': request.data.get('password', ''),
+    })
+
+    if result is None:
+        return Response({'error': 'Xatolik yuz berdi'}, status=500)
+
+    error = result.get('error')
+    if error:
+        return Response({'error': error}, status=401)
+
+    return Response({
+        'user': {
+            'id': result.get('id'),
+            'username': result.get('username'),
+            'first_name': result.get('first_name'),
+            'last_name': result.get('last_name'),
+        }
+    })
 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_view(request):
-    username = request.data.get('username')
-    password = request.data.get('password')
-    email = request.data.get('email', '')
-    if User.objects.filter(username=username).exists():
-        return Response({'error': 'Username already exists'}, status=400)
-    user = User.objects.create_user(username=username, password=password, email=email)
-    return Response({'user': UserSerializer(user).data, 'message': 'Created'}, status=201)
+    client = get_supabase()
+    if not client:
+        return Response({'error': 'Supabase not configured'}, status=503)
+
+    result = _call_rpc(client, 'register_user', {
+        'p_username': request.data.get('username', ''),
+        'p_password': request.data.get('password', ''),
+        'p_first_name': request.data.get('first_name', ''),
+        'p_last_name': request.data.get('last_name', ''),
+    })
+
+    if result is None:
+        return Response({'error': 'Xatolik yuz berdi'}, status=500)
+
+    error = result.get('error')
+    if error:
+        return Response({'error': error}, status=400)
+
+    return Response({'message': 'OK'}, status=201)
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def me_view(request):
-    return Response(UserSerializer(request.user).data)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_view(request):
+    client = get_supabase()
+    if not client:
+        return Response({'error': 'Supabase not configured'}, status=503)
+
+    result = _call_rpc(client, 'login_user', {
+        'p_username': request.data.get('username', ''),
+        'p_password': request.data.get('password', ''),
+    })
+
+    if result is None:
+        return Response({'error': 'Xatolik yuz berdi'}, status=500)
+
+    error = result.get('error')
+    if error:
+        return Response({'valid': False})
+
+    return Response({
+        'valid': True,
+        'user': {
+            'id': result.get('id'),
+            'username': result.get('username'),
+            'first_name': result.get('first_name'),
+            'last_name': result.get('last_name'),
+        }
+    })
