@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useCallback, useContext, useRef } from 'react';
 import { StyleSheet, View, Text, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Heart, Activity, Droplets, Moon } from 'lucide-react-native';
+import { TabBarContext } from '../navigation';
 
 const HEALTH_DATA = [
   { id: '1', title: 'Yurak urishi', value: '72', unit: 'bpm', icon: Heart, color: '#FF3B30' },
@@ -11,12 +12,26 @@ const HEALTH_DATA = [
 ];
 
 export default function HealthScreen() {
+  const { setVisible } = useContext(TabBarContext);
+  const lastY = useRef(0);
+
+  const onScroll = useCallback((e: any) => {
+    const y = e.nativeEvent.contentOffset.y;
+    if (y > lastY.current && y > 50) {
+      setVisible(false);
+    } else if (y < lastY.current || y <= 0) {
+      setVisible(true);
+    }
+    lastY.current = y;
+  }, [setVisible]);
+
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Salomatlik</Text>
       </View>
-      <ScrollView style={styles.content}>
+      <ScrollView style={styles.content}
+        onScroll={onScroll} scrollEventThrottle={16}>
         <Text style={styles.greeting}>Xayrli kun! 👋</Text>
         <Text style={styles.subtitle}>Bugungi salomatlik ko'rsatkichlaringiz</Text>
         {HEALTH_DATA.map((item) => (

@@ -24,8 +24,8 @@ export default function LoginScreen() {
   const canLogin = username.trim().length >= 3 && password.length >= 6 && !loading;
 
   function showErrorToast(msg: string) {
-    setToast({ visible: false, message: '' });
-    setTimeout(() => setToast({ visible: true, message: msg }), 30);
+    setToast({ visible: false, message: '', type: 'error' });
+    setTimeout(() => setToast({ visible: true, message: msg, type: 'error' }), 30);
   }
 
   async function handleLogin() {

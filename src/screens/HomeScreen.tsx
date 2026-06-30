@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
   StyleSheet, View, Text, TouchableOpacity, ScrollView,
   Platform,
@@ -8,17 +8,29 @@ import { Bell, Bot, TreeDeciduous, User } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { getSession, type UserSession } from '../../lib/auth';
-import type { MainTabParams } from '../navigation';
+import { TabBarContext, type MainTabParams } from '../navigation';
 
 const GREEN = '#1B6B3E';
 
 export default function HomeScreen() {
   const navigation = useNavigation<BottomTabNavigationProp<MainTabParams>>();
   const [session, setSession] = useState<UserSession | null>(null);
+  const { setVisible } = useContext(TabBarContext);
+  const lastY = useRef(0);
 
   useEffect(() => {
     getSession().then(setSession);
   }, []);
+
+  const onScroll = useCallback((e: any) => {
+    const y = e.nativeEvent.contentOffset.y;
+    if (y > lastY.current && y > 50) {
+      setVisible(false);
+    } else if (y < lastY.current || y <= 0) {
+      setVisible(true);
+    }
+    lastY.current = y;
+  }, [setVisible]);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#F0F5F2' }}>
@@ -45,7 +57,8 @@ export default function HomeScreen() {
         </View>
       </LinearGradient>
 
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}
+        onScroll={onScroll} scrollEventThrottle={16}>
         <View style={styles.chatBanner}>
           <View style={styles.chatBannerLeft}>
             <Text style={styles.chatBannerTitle}>Chat bot bilan suhbatlashing</Text>
