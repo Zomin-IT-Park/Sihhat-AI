@@ -26,9 +26,9 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
-    "@react-native-community/cli": "^20.2.0",
-    "@react-native-community/cli-platform-android": "^20.2.0",
-    "@react-native-community/cli-platform-ios": "^20.2.0",
+    "@react-native-community/cli": "^15.0.0",
+    "@react-native-community/cli-platform-android": "^15.0.0",
+    "@react-native-community/cli-platform-ios": "^15.0.0",
     "@react-native/metro-config": "^0.76.7",
     "@types/react": "~18.3.12",
     "react-native-dotenv": "^3.4.11",
