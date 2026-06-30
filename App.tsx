@@ -24,7 +24,7 @@ export default function App() {
     requestPermissions();
     getSession().then((session) => {
       setInitialRoute(session ? 'MainTabs' : 'Welcome');
-    });
+    }).catch(() => setInitialRoute('Welcome'));
   }, []);
 
   if (!initialRoute) return null;
