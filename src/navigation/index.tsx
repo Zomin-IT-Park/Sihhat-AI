@@ -1,9 +1,9 @@
 import React from 'react';
-import { BackHandler, Platform } from 'react-native';
+import { BackHandler, Platform, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createBottomTabNavigator, type BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useFocusEffect } from '@react-navigation/native';
-import { Home, MessageCircle, Pill, User } from 'lucide-react-native';
+import { Home, MessageCircle, Search, User } from 'lucide-react-native';
 
 import WelcomeScreen from '../screens/WelcomeScreen';
 import LoginScreen from '../screens/LoginScreen';
@@ -32,8 +32,108 @@ export type MainTabParams = {
 const Stack = createNativeStackNavigator<RootStackParams>();
 const Tab = createBottomTabNavigator<MainTabParams>();
 
-const GREEN = '#075E45';
 const INACTIVE = '#9CA3AF';
+const ICONS: Record<string, typeof Home> = {
+  Home, Chat: MessageCircle, Health: Search, Profile: User,
+};
+const LABELS: Record<string, string> = {
+  Home: 'Bosh sahifa',
+  Chat: 'AI dan maslahat',
+  Health: 'Qidiruv',
+  Profile: 'Profil',
+};
+
+function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  return (
+    <View style={customTab.container}>
+      <View style={customTab.card}>
+        {state.routes.map((route, index) => {
+          const isFocused = state.index === index;
+          const Icon = ICONS[route.name] || Home;
+          const label = LABELS[route.name] || route.name;
+
+          const onPress = () => {
+            const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name, route.params);
+            }
+          };
+
+          if (route.name === 'Chat') return null;
+          return (
+            <TouchableOpacity key={route.key} style={customTab.item} activeOpacity={0.7} onPress={onPress}>
+              <View style={customTab.iconWrap}>
+                {isFocused && <View style={customTab.activeBg} />}
+                <Icon size={isFocused ? 24 : 22} color={isFocused ? '#FFFFFF' : INACTIVE} strokeWidth={isFocused ? 2.5 : 1.8} />
+              </View>
+              <Text style={[customTab.label, isFocused && customTab.labelActive]}>{label}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+const customTab = StyleSheet.create({
+  container: {
+    position: 'absolute',
+    bottom: 32,
+    left: 16,
+    right: 16,
+    borderRadius: 28,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 10,
+  },
+  card: {
+    flexDirection: 'row',
+    height: 66,
+    borderRadius: 28,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    paddingTop: 0,
+  },
+  item: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 60,
+    paddingTop: 4,
+  },
+  iconWrap: {
+    width: 38,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  activeBg: {
+    position: 'absolute',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#075E45',
+    shadowColor: '#075E45',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  label: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#9CA3AF',
+    marginTop: 3,
+  },
+  labelActive: {
+    color: '#075E45',
+    fontWeight: '700',
+  },
+});
 
 function MainTabs() {
   useFocusEffect(
@@ -45,65 +145,13 @@ function MainTabs() {
 
   return (
     <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: GREEN,
-        tabBarInactiveTintColor: INACTIVE,
-        tabBarLabelStyle: { fontSize: 10, fontWeight: '600', marginTop: 2 },
-        tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopWidth: 0,
-          height: Platform.OS === 'ios' ? 88 : 64,
-          paddingBottom: Platform.OS === 'ios' ? 28 : 8,
-          paddingTop: 8,
-          elevation: 10,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.06,
-          shadowRadius: 8,
-        },
-      }}
+      tabBar={(props) => <CustomTabBar {...props} />}
+      screenOptions={{ headerShown: false, tabBarActiveTintColor: '#075E45', tabBarInactiveTintColor: '#9CA3AF' }}
     >
-      <Tab.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{
-          title: 'Bosh sahifa',
-          tabBarIcon: ({ color, focused }) => (
-            <Home size={24} color={color} strokeWidth={focused ? 2.5 : 1.8} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Chat"
-        component={ChatScreen}
-        options={{
-          title: 'AI Chat',
-          tabBarIcon: ({ color, focused }) => (
-            <MessageCircle size={24} color={color} strokeWidth={focused ? 2.5 : 1.8} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Health"
-        component={HealthScreen}
-        options={{
-          title: 'Dori',
-          tabBarIcon: ({ color, focused }) => (
-            <Pill size={24} color={color} strokeWidth={focused ? 2.5 : 1.8} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{
-          title: 'Profil',
-          tabBarIcon: ({ color, focused }) => (
-            <User size={24} color={color} strokeWidth={focused ? 2.5 : 1.8} />
-          ),
-        }}
-      />
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Chat" component={ChatScreen} />
+      <Tab.Screen name="Health" component={HealthScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
 }

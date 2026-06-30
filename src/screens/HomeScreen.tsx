@@ -17,8 +17,6 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { getSession, type UserSession } from '../../lib/auth';
 import type { MainTabParams } from '../navigation';
 
-const CARD_RADIUS = 32;
-
 export default function HomeScreen() {
   const navigation = useNavigation<BottomTabNavigationProp<MainTabParams>>();
   const [session, setSession] = useState<UserSession | null>(null);
@@ -53,7 +51,7 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#F7FBFA' }}>
+    <View style={{ flex: 1, backgroundColor: '#F2F6F4' }}>
       <StatusBar barStyle="light-content" backgroundColor="#075E45" />
 
       <LinearGradient
@@ -75,7 +73,6 @@ export default function HomeScreen() {
             </View>
             <TouchableOpacity style={styles.bellBtn}>
               <Bell size={20} color="#FFFFFF" strokeWidth={2} />
-              <View style={styles.bellDot} />
             </TouchableOpacity>
           </View>
         </View>
@@ -203,7 +200,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
-  headerContent: { paddingHorizontal: 28 },
+  headerContent: { paddingHorizontal: 16 },
   headerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   avatar: {
     width: 50, height: 50, borderRadius: 25,
@@ -219,15 +216,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.15)',
     alignItems: 'center', justifyContent: 'center',
   },
-  bellDot: {
-    position: 'absolute', top: 9, right: 9,
-    width: 9, height: 9, borderRadius: 4.5,
-    backgroundColor: '#F5C842', borderWidth: 2, borderColor: '#012E25',
-  },
   body: { padding: 16, paddingTop: 12 },
   chatCard: {
     backgroundColor: '#FFFFFF', borderRadius: 30, marginBottom: 28,
-    shadowColor: '#023E2D', shadowOffset: { width: 0, height: 6 },
+    shadowColor: '#075E45', shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.12, shadowRadius: 20, elevation: 8,
   },
   chatCardInner: { flexDirection: 'row', padding: 20, alignItems: 'center' },
