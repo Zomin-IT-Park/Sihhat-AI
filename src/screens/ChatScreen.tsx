@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
   disclaimerText: { fontSize: 11, color: '#92400E', flex: 1, lineHeight: 16 },
   inputBar: {
     backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: '#E5E7EB',
-    paddingBottom: Platform.OS === 'ios' ? 24 : 8,
+    paddingBottom: Platform.OS === 'ios' ? 120 : 100,
   },
   inputRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 12, paddingVertical: 8, alignItems: 'center' },
   input: {

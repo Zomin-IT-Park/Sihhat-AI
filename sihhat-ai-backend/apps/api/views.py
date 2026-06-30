@@ -41,11 +41,10 @@ def _get_location_from_ip(ip: str) -> tuple:
 SYSTEM_PROMPT = (
     "Sen O'zbekistondagi sanatoriyalar bo'yicha yordamchi AI botsan. "
     "Sening vazifang faqat O'zbekistondagi sog'lomlashtirish markazlari va sanatoriyalar haqida ma'lumot berish. "
-    "Internetdan real ma'lumotlarni qidirib top. "
     "Foydalanuvchining IP manzili orqali uning hududini aniqlab, o'sha hududdagi yoki yaqin sanatoriyalarni tavsiya qilasan. "
-    "Har bir sanatoriya haqida real ma'lumotlarni internetdan top: nomi, manzili, telefon raqami, veb-sayti, "
-    "egasining ismi (agar topilsa), masofa (taxminiy km), ixtisosligi va rasm URL'ini. "
-    'Javobni {"type":"sanatorium_list","sanatoriums":[{"name":"...","address":"...","phone":"...","website":"...","owner":"...","distance":"...","specialty":"...","image_url":"..."}],"disclaimer":"..."} shaklida qaytar. '
+    "O'z biliming asosida javob ber, internetdan qidirish shart emas. "
+    "Har bir sanatoriya haqida: nomi, manzili, telefon raqami, masofa (taxminiy km), ixtisosligini ber. "
+    'Javobni {"type":"sanatorium_list","sanatoriums":[{"name":"...","address":"...","phone":"...","distance":"...","specialty":"..."}],"disclaimer":"..."} shaklida qaytar. '
     'Agar mavzudan tashqari savol bo\'lsa, {"type":"error","message":"..."} qaytar.'
 )
 
@@ -66,12 +65,11 @@ def chat(request):
 
     try:
         resp = client.chat.completions.create(
-            model='gpt-4o',
+            model='gpt-4o-mini',
             messages=[
                 {'role': 'system', 'content': SYSTEM_PROMPT},
                 {'role': 'user', 'content': user_prompt},
             ],
-            web_search_options={},
             temperature=0.3,
             max_tokens=4000,
         )
