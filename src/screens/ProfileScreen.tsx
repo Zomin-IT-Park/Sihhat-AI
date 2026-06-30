@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   menuTitle: { fontSize: 16, color: '#1C1C1E' },
   logoutButton: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16, marginTop: 24, gap: 8,
+    backgroundColor: '#FFFFFF', borderRadius: 14, padding: 16, marginTop: 24, gap: 8,
   },
   logoutText: { fontSize: 16, fontWeight: '600', color: '#FF3B30' },
 });

@@ -98,6 +98,15 @@ export function clearWatch(id: number | null): void {
   }
 }
 
+function shortenAddress(displayName: string): string {
+  let parts = displayName.split(', ');
+  // remove mamlakat va viloyat
+  if (parts.length > 3) parts = parts.slice(0, -2);
+  // uy raqamini olib tashlash (agar 1-qism son bo'lsa)
+  if (/^\d/.test(parts[0])) parts = parts.slice(1);
+  return parts.join(', ');
+}
+
 export async function getAddressFromCoords(
   lat: number,
   lng: number,
@@ -105,11 +114,14 @@ export async function getAddressFromCoords(
   try {
     const res = await fetch(
       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=uz`,
+      { headers: { 'User-Agent': 'SihhatAI/1.0 (sihhat-ai-app)' } },
     );
     const data = await res.json();
-    if (data?.display_name) {
-      const parts = data.display_name.split(', ');
-      return parts.slice(0, 3).join(', ');
+    if (data?.display_name) return shortenAddress(data.display_name);
+    if (data?.name) return data.name;
+    if (data?.address) {
+      const a = data.address;
+      return [a.city || a.town || a.village, a.district, a.road].filter(Boolean).join(', ');
     }
     return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
   } catch {

@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   btn: {
-    height: 54, backgroundColor: GREEN, borderRadius: 27,
+    height: 54, backgroundColor: GREEN, borderRadius: 14,
     alignItems: 'center', justifyContent: 'center',
     shadowColor: GREEN, shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3, shadowRadius: 8, elevation: 5,

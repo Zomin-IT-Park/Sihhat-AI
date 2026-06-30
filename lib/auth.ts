@@ -1,6 +1,7 @@
 import EncryptedStorage from 'react-native-encrypted-storage';
 
-const API_BASE = 'http://10.0.2.2:8080/api/auth';
+const API_BASE = 'http://127.0.0.1:8080/api/auth';
+const TIMEOUT = 8000;
 
 export type UserSession = {
   id: string;
@@ -12,12 +13,24 @@ export type UserSession = {
 const SESSION_KEY = 'sihhat_session';
 
 async function apiPost(path: string, body: Record<string, string>) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  return res.json();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT);
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    return res.json();
+  } catch (err: any) {
+    clearTimeout(timer);
+    if (err?.name === 'AbortError') {
+      return { error: 'Server bilan aloqa yo\'q. Backend ishga tushirilganligini tekshiring.' };
+    }
+    return { error: 'Tarmoq xatoligi. Qayta urinib ko\'ring.' };
+  }
 }
 
 export async function register(params: {
@@ -51,14 +64,6 @@ export async function login(
   };
   await EncryptedStorage.setItem(SESSION_KEY, JSON.stringify(user));
   return { user };
-}
-
-export async function verifySession(
-  username: string,
-  password: string,
-): Promise<{ valid: boolean; user?: UserSession }> {
-  const json = await apiPost('/verify/', { username, password });
-  return json;
 }
 
 export async function logout(): Promise<void> {

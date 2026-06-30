@@ -40,6 +40,10 @@ declare module 'lucide-react-native' {
   export const Sparkle: LucideIcon;
   export const ShoppingBag: LucideIcon;
   export const Navigation: LucideIcon;
+  export const Plus: LucideIcon;
+  export const Image: LucideIcon;
+  export const FileText: LucideIcon;
+  export const X: LucideIcon;
 }
 
 declare module 'react-native-geolocation-service' {

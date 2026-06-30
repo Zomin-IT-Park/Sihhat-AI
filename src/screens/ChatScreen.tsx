@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, FlatList, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TextInput, FlatList, TouchableOpacity, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Send } from 'lucide-react-native';
 
@@ -21,9 +21,10 @@ export default function ChatScreen() {
   }
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.container}>
+    <SafeAreaView edges={['bottom']} style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Sihhat-AI Suhbat</Text>
+        <Text style={styles.headerTitle}>AI dan maslahat</Text>
       </View>
 
       <FlatList<Message>
@@ -75,10 +76,10 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1, height: 44, backgroundColor: '#F2F2F7',
-    borderRadius: 22, paddingHorizontal: 16, fontSize: 16, color: '#1C1C1E',
+    borderRadius: 12, paddingHorizontal: 16, fontSize: 16, color: '#1C1C1E',
   },
   sendButton: {
     width: 44, height: 44, backgroundColor: '#007AFF',
-    borderRadius: 22, alignItems: 'center', justifyContent: 'center',
+    borderRadius: 12, alignItems: 'center', justifyContent: 'center',
   },
 });

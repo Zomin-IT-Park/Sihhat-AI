@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   forgotWrap: { alignItems: 'center', paddingVertical: 6, marginBottom: 28 },
   forgotText: { fontSize: 14.5, color: GREEN, fontWeight: '600' },
   loginBtn: {
-    marginHorizontal: 24, height: 54, backgroundColor: GREEN, borderRadius: 27,
+    marginHorizontal: 24, height: 54, backgroundColor: GREEN, borderRadius: 14,
     alignItems: 'center', justifyContent: 'center', marginBottom: 24,
     shadowColor: GREEN, shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3, shadowRadius: 8, elevation: 5,

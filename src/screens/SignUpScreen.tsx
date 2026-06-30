@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 12.5, color: '#EF4444', marginTop: 6, marginLeft: 4, fontWeight: '500' },
   successText: { fontSize: 12.5, color: '#16A34A', marginTop: 6, marginLeft: 4, fontWeight: '500' },
   submitBtn: {
-    marginHorizontal: 24, height: 54, backgroundColor: GREEN, borderRadius: 27,
+    marginHorizontal: 24, height: 54, backgroundColor: GREEN, borderRadius: 14,
     alignItems: 'center', justifyContent: 'center', marginBottom: 20,
     shadowColor: GREEN, shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3, shadowRadius: 8, elevation: 5,

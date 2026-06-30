@@ -76,6 +76,12 @@ export default function HomeScreen() {
               <Text style={styles.userName} numberOfLines={1}>
                 {session ? `${session.first_name} ${session.last_name}` : 'Ozodbek Usmonqulov'}
               </Text>
+              {address ? (
+                <View style={styles.locationRow}>
+                  <Navigation size={12} color="rgba(255,255,255,0.7)" strokeWidth={2} />
+                  <Text style={styles.locationText} numberOfLines={1}>{address}</Text>
+                </View>
+              ) : null}
             </View>
             <TouchableOpacity style={styles.bellBtn}>
               <Bell size={20} color="#FFFFFF" strokeWidth={2} />
@@ -146,6 +152,8 @@ const styles = StyleSheet.create({
   headerTextWrap: { flex: 1 },
   greeting: { fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: '500', marginBottom: 2 },
   userName: { fontSize: 18, fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.3 },
+  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  locationText: { fontSize: 11, color: 'rgba(255,255,255,0.7)', fontWeight: '500', flex: 1 },
   bellBtn: {
     width: 44, height: 44, borderRadius: 22,
     backgroundColor: 'rgba(255,255,255,0.15)',

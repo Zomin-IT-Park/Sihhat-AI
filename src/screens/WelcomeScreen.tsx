@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   startBtn: {
-    height: 56, backgroundColor: '#FFFFFF', borderRadius: 28,
+    height: 56, backgroundColor: '#FFFFFF', borderRadius: 14,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2, shadowRadius: 10, elevation: 6,
