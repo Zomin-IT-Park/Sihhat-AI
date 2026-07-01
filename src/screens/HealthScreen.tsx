@@ -6,6 +6,9 @@ import {
 } from 'react-native';
 import { Plus, Image as LucideImage, FileText, X, Send, Sparkle, MapPin, Phone, AlertTriangle } from 'lucide-react-native';
 import { sendChatMessage, type SanatoriumItem } from '../../lib/chat';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParams } from '../navigation';
 
 const GREEN = '#1B6B3E';
 const KEYBOARD_GAP = 38;

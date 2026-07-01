@@ -10,6 +10,7 @@ import WelcomeScreen from '../screens/WelcomeScreen';
 import LoginScreen from '../screens/LoginScreen';
 import SignUpScreen from '../screens/SignUpScreen';
 import SuccessScreen from '../screens/SuccessScreen';
+import BookingScreen from '../screens/BookingScreen';
 import HomeScreen from '../screens/HomeScreen';
 import ChatScreen from '../screens/ChatScreen';
 import HealthScreen from '../screens/HealthScreen';
@@ -22,6 +23,7 @@ export type RootStackParams = {
   SignUp: undefined;
   Success: undefined;
   MainTabs: undefined;
+  Booking: { sanatoriumName?: string; specialty?: string };
 };
 
 export type MainTabParams = {
@@ -177,6 +179,7 @@ export default function RootNavigator({ initialRoute }: { initialRoute: 'Welcome
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="SignUp" component={SignUpScreen} />
       <Stack.Screen name="Success" component={SuccessScreen} />
+      <Stack.Screen name="Booking" component={BookingScreen} />
       <Stack.Screen name="MainTabs" component={MainTabs} options={{ gestureEnabled: false }} />
     </Stack.Navigator>
   );

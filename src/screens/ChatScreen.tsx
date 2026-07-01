@@ -3,8 +3,11 @@ import {
   StyleSheet, View, Text, TextInput, FlatList, TouchableOpacity,
   KeyboardAvoidingView, Platform, Animated, StatusBar, Pressable, Image as RNImage, Linking,
 } from 'react-native';
-import { Send, Sparkle, MapPin, AlertTriangle, Plus, Image as LucideImage, FileText, X, Navigation, Settings } from 'lucide-react-native';
+import { Send, Sparkle, AlertTriangle, Plus, Image as LucideImage, FileText, X, Navigation, Settings } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParams } from '../navigation';
 import { sendChatMessage, type SanatoriumItem } from '../../lib/chat';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -110,6 +113,7 @@ export default function ChatScreen() {
 
 function SanatoriumCard({ s }: { s: SanatoriumItem }) {
   const [imgErr, setImgErr] = useState(false);
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParams>>();
   const imageUri = (!s.image_url || imgErr) ? PLACEHOLDER_IMAGE : s.image_url;
 
   return (
@@ -138,6 +142,9 @@ function SanatoriumCard({ s }: { s: SanatoriumItem }) {
             <Text style={cardStyles.webBtnText}>Veb-sayt</Text>
           </TouchableOpacity>
         ) : null}
+        <TouchableOpacity style={cardStyles.bookBtn} onPress={() => navigation.navigate('Booking', { sanatoriumName: s.name, specialty: s.specialty })}>
+          <Text style={cardStyles.bookBtnText}>Bron qilish</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -161,6 +168,10 @@ const cardStyles = StyleSheet.create({
     backgroundColor: '#F3F4F6', borderRadius: 12, paddingVertical: 12, alignItems: 'center',
   },
   webBtnText: { fontSize: 14, fontWeight: '600', color: '#1B6B3E' },
+  bookBtn: {
+    backgroundColor: '#F5C842', borderRadius: 12, paddingVertical: 12, alignItems: 'center',
+  },
+  bookBtnText: { fontSize: 14, fontWeight: '700', color: '#0D4830' },
 });
 
   return (
@@ -369,37 +380,11 @@ const styles = StyleSheet.create({
   thinkingDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#1B6B3E', opacity: 0.5 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#1B6B3E' },
   botBlock: { marginBottom: 10 },
-  card: {
-    backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16, marginBottom: 10,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
-  },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  cardName: { fontSize: 16, fontWeight: '700', color: '#111827', flex: 1 },
-  distanceBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 3,
-    backgroundColor: '#E8F5E9', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8,
-  },
-  distanceText: { fontSize: 12, fontWeight: '600', color: '#1B6B3E' },
-  cardImage: { width: '100%', height: 160, borderRadius: 10, marginBottom: 10 },
-  cardAddress: { fontSize: 13, color: '#6B7280', marginBottom: 4 },
-  cardRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
-  cardMeta: { fontSize: 13, color: '#374151' },
-  cardSpecialty: { fontSize: 12, color: '#6B7280', marginBottom: 4, fontStyle: 'italic' },
-  cardHours: { fontSize: 12, color: '#6B7280', marginBottom: 4 },
-  cardPrice: { fontSize: 12, color: '#1B6B3E', fontWeight: '600', marginBottom: 4 },
-  cardActions: { marginTop: 8, gap: 6 },
-  mapBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    backgroundColor: '#1B6B3E', borderRadius: 12, paddingVertical: 10,
-  },
-  mapBtnText: { fontSize: 14, fontWeight: '600', color: '#FFFFFF' },
-  webBtn: { backgroundColor: '#F3F4F6', borderRadius: 10, paddingVertical: 8, alignItems: 'center' },
-  webBtnText: { fontSize: 13, fontWeight: '600', color: '#1B6B3E' },
+  disclaimerText: { fontSize: 11, color: '#92400E', flex: 1, lineHeight: 16 },
   disclaimer: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 6,
     backgroundColor: '#FEF3C7', borderRadius: 12, padding: 12,
   },
-  disclaimerText: { fontSize: 11, color: '#92400E', flex: 1, lineHeight: 16 },
   inputBar: {
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 12, paddingTop: 8,
