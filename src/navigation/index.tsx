@@ -3,7 +3,7 @@ import { BackHandler, Platform, Text, TouchableOpacity, View, StyleSheet } from 
 import LinearGradient from 'react-native-linear-gradient';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator, type BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, type NavigatorScreenParams } from '@react-navigation/native';
 import { Home, MessageCircle, Search, User, ShoppingBag } from 'lucide-react-native';
 
 import WelcomeScreen from '../screens/WelcomeScreen';
@@ -22,8 +22,14 @@ export type RootStackParams = {
   Login: undefined;
   SignUp: undefined;
   Success: undefined;
-  MainTabs: undefined;
-  Booking: { sanatoriumName?: string; specialty?: string };
+  MainTabs: NavigatorScreenParams<MainTabParams> | undefined;
+  Booking: {
+    sanatoriumName?: string;
+    specialty?: string;
+    image?: string;
+    address?: string;
+    price?: string;
+  };
 };
 
 export type MainTabParams = {

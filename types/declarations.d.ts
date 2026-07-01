@@ -46,6 +46,14 @@ declare module 'lucide-react-native' {
   export const X: LucideIcon;
   export const Phone: LucideIcon;
   export const AlertTriangle: LucideIcon;
+  export const ArrowLeft: LucideIcon;
+  export const MessageSquarePlus: LucideIcon;
+  export const Trash2: LucideIcon;
+  export const History: LucideIcon;
+  export const CreditCard: LucideIcon;
+  export const CheckCircle2: LucideIcon;
+  export const Clock: LucideIcon;
+  export const PackageOpen: LucideIcon;
 }
 
 declare module 'react-native-geolocation-service' {

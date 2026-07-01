@@ -1,35 +1,86 @@
 import React, { useState } from 'react';
 import {
   StyleSheet, View, Text, TextInput, TouchableOpacity,
-  KeyboardAvoidingView, Platform, ScrollView, StatusBar,
+  KeyboardAvoidingView, Platform, ScrollView, StatusBar, Image, ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { ChevronLeft } from 'lucide-react-native';
+import { ChevronLeft, CreditCard, CheckCircle2, Send } from 'lucide-react-native';
 import type { RootStackParams } from '../navigation';
+import { getSession } from '../../lib/auth';
+import { createBooking, findSanatoriumIdByName } from '../../lib/bookings';
+import { getSanatoriumImage } from '../../lib/images';
+import Toast from '../components/Toast';
 
 const GREEN = '#1B6B3E';
+const DEFAULT_PRICE = "450 000 so'm";
 
 export default function BookingScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParams>>();
   const route = useRoute<RouteProp<RootStackParams, 'Booking'>>();
-  const { sanatoriumName, specialty } = route.params || {};
+  const { sanatoriumName, specialty, image, address, price } = route.params || {};
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [age, setAge] = useState('');
-  const [disease, setDisease] = useState('');
+  const [complaint, setComplaint] = useState('');
+  const [paid, setPaid] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [toast, setToast] = useState({ visible: false, message: '' });
 
-  function handleBook() {
-    if (!firstName.trim() || !lastName.trim() || !age.trim() || !disease.trim()) return;
-    navigation.navigate('Success');
+  const displayPrice = price || DEFAULT_PRICE;
+  const canBook = firstName.trim() && lastName.trim() && age.trim() && complaint.trim();
+  const canSubmit = canBook && paid && !submitting;
+
+  function showError(msg: string) {
+    setToast({ visible: false, message: '' });
+    setTimeout(() => setToast({ visible: true, message: msg }), 30);
   }
 
-  const canBook = firstName.trim() && lastName.trim() && age.trim() && disease.trim();
+  async function handleSubmit() {
+    if (!canSubmit || !sanatoriumName) return;
+    setSubmitting(true);
+    try {
+      const session = await getSession();
+      if (!session) {
+        showError('Sessiya topilmadi. Iltimos, qayta kiring.');
+        return;
+      }
+      const sanatoryId = await findSanatoriumIdByName(sanatoriumName);
+      const { error } = await createBooking({
+        username: session.username,
+        sanatory_id: sanatoryId,
+        sanatorium_name: sanatoriumName,
+        sanatorium_image: image ?? getSanatoriumImage(sanatoriumName),
+        region: address ?? null,
+        specialty: specialty ?? null,
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        age: age.trim(),
+        complaint: complaint.trim(),
+        price: displayPrice,
+      });
+      if (error) {
+        showError("Yuborishda xatolik yuz berdi. Qayta urinib ko'ring.");
+        return;
+      }
+      navigation.navigate('MainTabs', { screen: 'Orders' });
+    } catch {
+      showError('Internetga ulanishni tekshiring.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: '#FFFFFF' }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <Toast
+        message={toast.message}
+        type="error"
+        visible={toast.visible}
+        onHide={() => setToast(t => ({ ...t, visible: false }))}
+      />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
@@ -41,9 +92,17 @@ export default function BookingScreen() {
 
         {sanatoriumName ? (
           <View style={styles.infoCard}>
-            <Text style={styles.infoLabel}>Sanatoriya</Text>
-            <Text style={styles.infoValue}>{sanatoriumName}</Text>
-            {specialty ? <Text style={styles.infoSub}>{specialty}</Text> : null}
+            <Image
+              source={{ uri: image || getSanatoriumImage(sanatoriumName) }}
+              style={styles.infoImage}
+              resizeMode="cover"
+            />
+            <View style={styles.infoTextWrap}>
+              <Text style={styles.infoLabel}>Sanatoriya</Text>
+              <Text style={styles.infoValue}>{sanatoriumName}</Text>
+              {address ? <Text style={styles.infoSub}>{address}</Text> : null}
+              {specialty ? <Text style={styles.infoSub}>{specialty}</Text> : null}
+            </View>
           </View>
         ) : null}
 
@@ -79,26 +138,57 @@ export default function BookingScreen() {
             maxLength={3}
           />
 
-          <Text style={styles.label}>Qaysi kasallik bo'yicha</Text>
+          <Text style={styles.label}>Shikoyat / murojaat sababi</Text>
           <TextInput
             style={[styles.input, styles.multiline]}
             placeholder="Masalan: bel og'rig'i, nafas olish muammolari..."
             placeholderTextColor="#9CA3AF"
-            value={disease}
-            onChangeText={setDisease}
+            value={complaint}
+            onChangeText={setComplaint}
             multiline
-            numberOfLines={3}
+            numberOfLines={4}
             textAlignVertical="top"
           />
         </View>
 
+        <View style={styles.paySection}>
+          <View style={styles.priceRow}>
+            <Text style={styles.priceLabel}>To'lov summasi</Text>
+            <Text style={styles.priceValue}>{displayPrice}</Text>
+          </View>
+          <TouchableOpacity
+            style={[styles.payBtn, paid && styles.payBtnDone]}
+            activeOpacity={paid ? 1 : 0.85}
+            disabled={paid}
+            onPress={() => setPaid(true)}
+          >
+            {paid ? (
+              <>
+                <CheckCircle2 size={18} color="#FFFFFF" strokeWidth={2.4} />
+                <Text style={styles.payBtnText}>To'landi</Text>
+              </>
+            ) : (
+              <>
+                <CreditCard size={18} color="#FFFFFF" strokeWidth={2.2} />
+                <Text style={styles.payBtnText}>To'lov qilish</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+
         <TouchableOpacity
-          style={[styles.bookBtn, !canBook && styles.bookBtnDisabled]}
-          disabled={!canBook}
-          onPress={handleBook}
+          style={[styles.submitBtn, !canSubmit && styles.submitBtnDisabled]}
+          disabled={!canSubmit}
+          onPress={handleSubmit}
         >
-          <Text style={{ fontSize: 18 }}>📅</Text>
-          <Text style={styles.bookBtnText}>Bron qilish</Text>
+          {submitting ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <>
+              <Send size={18} color="#FFFFFF" strokeWidth={2.2} />
+              <Text style={styles.submitBtnText}>Jo'natish</Text>
+            </>
+          )}
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -117,13 +207,15 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 18, fontWeight: '700', color: '#1C1C1E' },
   infoCard: {
-    marginHorizontal: 20, padding: 16, backgroundColor: '#E8F5E9',
-    borderRadius: 14, marginBottom: 24,
+    marginHorizontal: 20, padding: 12, backgroundColor: '#E8F5E9',
+    borderRadius: 14, marginBottom: 24, flexDirection: 'row', gap: 12, alignItems: 'center',
   },
-  infoLabel: { fontSize: 12, color: '#6B7280', fontWeight: '500', marginBottom: 4 },
-  infoValue: { fontSize: 17, fontWeight: '700', color: '#1B6B3E' },
-  infoSub: { fontSize: 13, color: '#374151', marginTop: 2 },
-  form: { paddingHorizontal: 20, marginBottom: 28 },
+  infoImage: { width: 64, height: 64, borderRadius: 10 },
+  infoTextWrap: { flex: 1 },
+  infoLabel: { fontSize: 12, color: '#6B7280', fontWeight: '500', marginBottom: 2 },
+  infoValue: { fontSize: 16, fontWeight: '700', color: '#1B6B3E' },
+  infoSub: { fontSize: 12, color: '#374151', marginTop: 2 },
+  form: { paddingHorizontal: 20, marginBottom: 20 },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 16 },
   label: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 6, marginTop: 12 },
   input: {
@@ -131,13 +223,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: '#111827',
     backgroundColor: '#FAFAFA',
   },
-  multiline: { minHeight: 80, paddingTop: 12 },
-  bookBtn: {
+  multiline: { minHeight: 90, paddingTop: 12 },
+  paySection: { paddingHorizontal: 20, marginBottom: 20 },
+  priceRow: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    marginBottom: 12,
+  },
+  priceLabel: { fontSize: 14, color: '#6B7280', fontWeight: '500' },
+  priceValue: { fontSize: 20, fontWeight: '800', color: '#111827' },
+  payBtn: {
+    height: 52, backgroundColor: '#0F766E', borderRadius: 14,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+  },
+  payBtnDone: { backgroundColor: '#16A34A' },
+  payBtnText: { fontSize: 15, fontWeight: '700', color: '#FFFFFF' },
+  submitBtn: {
     marginHorizontal: 20, height: 54, backgroundColor: GREEN, borderRadius: 14,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     shadowColor: GREEN, shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3, shadowRadius: 8, elevation: 5,
   },
-  bookBtnDisabled: { backgroundColor: '#9CA3AF', shadowOpacity: 0, elevation: 0 },
-  bookBtnText: { fontSize: 16, fontWeight: '700', color: '#FFFFFF' },
+  submitBtnDisabled: { backgroundColor: '#9CA3AF', shadowOpacity: 0, elevation: 0 },
+  submitBtnText: { fontSize: 16, fontWeight: '700', color: '#FFFFFF' },
 });

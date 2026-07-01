@@ -9,6 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParams } from '../navigation';
 import { sendChatMessage, type SanatoriumItem } from '../../lib/chat';
+import { getSanatoriumImage } from '../../lib/images';
 import LinearGradient from 'react-native-linear-gradient';
 
 type Message = {
@@ -114,7 +115,7 @@ export default function ChatScreen() {
 function SanatoriumCard({ s }: { s: SanatoriumItem }) {
   const [imgErr, setImgErr] = useState(false);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParams>>();
-  const imageUri = (!s.image_url || imgErr) ? PLACEHOLDER_IMAGE : s.image_url;
+  const imageUri = imgErr ? PLACEHOLDER_IMAGE : getSanatoriumImage(s.name, s.image_url);
 
   return (
     <View style={cardStyles.wrapper}>
@@ -142,7 +143,13 @@ function SanatoriumCard({ s }: { s: SanatoriumItem }) {
             <Text style={cardStyles.webBtnText}>Veb-sayt</Text>
           </TouchableOpacity>
         ) : null}
-        <TouchableOpacity style={cardStyles.bookBtn} onPress={() => navigation.navigate('Booking', { sanatoriumName: s.name, specialty: s.specialty })}>
+        <TouchableOpacity style={cardStyles.bookBtn} onPress={() => navigation.navigate('Booking', {
+          sanatoriumName: s.name,
+          specialty: s.specialty,
+          image: imageUri,
+          address: s.address,
+          price: s.price,
+        })}>
           <Text style={cardStyles.bookBtnText}>Bron qilish</Text>
         </TouchableOpacity>
       </View>
@@ -197,32 +204,6 @@ const cardStyles = StyleSheet.create({
           </TouchableOpacity>
         </View>
       </LinearGradient>
-
-      {showSettings && (
-        <Pressable style={StyleSheet.absoluteFill} onPress={() => setShowSettings(false)}>
-          <Animated.View style={[styles.dropdown, { opacity: settingsAnim, transform: [{ scale: settingsAnim.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] }) }] }]}>
-            <TouchableOpacity style={styles.dropdownItem} onPress={newChat}>
-              <View style={[styles.dropdownIcon, { backgroundColor: '#E8F5E9' }]}>
-                <Plus size={18} color="#1B6B3E" strokeWidth={2.5} />
-              </View>
-              <View>
-                <Text style={styles.dropdownText}>Yangi Chat</Text>
-                <Text style={styles.dropdownSub}>Suhbatni qaytadan boshlash</Text>
-              </View>
-            </TouchableOpacity>
-            <View style={styles.dropdownDivider} />
-            <TouchableOpacity style={styles.dropdownItem} onPress={clearHistory}>
-              <View style={[styles.dropdownIcon, { backgroundColor: '#FEE2E2' }]}>
-                <Text style={{ fontSize: 18 }}>🗑</Text>
-              </View>
-              <View>
-                <Text style={[styles.dropdownText, { color: '#EF4444' }]}>Tozalash</Text>
-                <Text style={styles.dropdownSub}>Barcha xabarlarni o'chirish</Text>
-              </View>
-            </TouchableOpacity>
-          </Animated.View>
-        </Pressable>
-      )}
 
       <FlatList<Message>
         ref={flatRef}
@@ -306,6 +287,32 @@ const cardStyles = StyleSheet.create({
           </View>
         </View>
       </KeyboardAvoidingView>
+
+      {showSettings && (
+        <Pressable style={[StyleSheet.absoluteFill, { zIndex: 1000, elevation: 24 }]} onPress={() => setShowSettings(false)}>
+          <Animated.View style={[styles.dropdown, { opacity: settingsAnim, transform: [{ scale: settingsAnim.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] }) }] }]}>
+            <TouchableOpacity style={styles.dropdownItem} onPress={newChat}>
+              <View style={[styles.dropdownIcon, { backgroundColor: '#E8F5E9' }]}>
+                <Plus size={18} color="#1B6B3E" strokeWidth={2.5} />
+              </View>
+              <View>
+                <Text style={styles.dropdownText}>Yangi Chat</Text>
+                <Text style={styles.dropdownSub}>Suhbatni qaytadan boshlash</Text>
+              </View>
+            </TouchableOpacity>
+            <View style={styles.dropdownDivider} />
+            <TouchableOpacity style={styles.dropdownItem} onPress={clearHistory}>
+              <View style={[styles.dropdownIcon, { backgroundColor: '#FEE2E2' }]}>
+                <Text style={{ fontSize: 18 }}>🗑</Text>
+              </View>
+              <View>
+                <Text style={[styles.dropdownText, { color: '#EF4444' }]}>Tozalash</Text>
+                <Text style={styles.dropdownSub}>Barcha xabarlarni o'chirish</Text>
+              </View>
+            </TouchableOpacity>
+          </Animated.View>
+        </Pressable>
+      )}
     </SafeAreaView>
   );
 }
