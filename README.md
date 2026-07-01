@@ -1,61 +1,73 @@
 # Sihhat-AI
 
-Sizning shaxsiy tibbiy sunʼiy intellekt yordamchingiz. Salomatligingizni xavfsiz nazorat qiling.
+O'zbekistondagi sanatoriylar va sog'lomlashtirish markazlari haqida ma'lumot beruvchi AI yordamchi.
 
-## Xususiyatlar
+## Imkoniyatlar
 
-- 🤖 AI bilan suhbat - tibbiy savollaringizga javob oling
-- 💪 Salomatlik kuzatuvi - yurak urishi, faollik, suv va uyquni kuzating
-- 🔒 Maxfiylik - maʼlumotlaringiz toʻliq himoyalangan
-- 📱 iOS uslubida chiroyli dizayn
+- AI chat orqali sanatoriyalar haqida ma'lumot olish
+- Internetdan real vaqtda qidirish (Perplexity Sonar Pro)
+- Sanatoriyalarning rasmi, nomi, ixtisoslashuvi
+- Xaritada ko'rish va veb-saytga o'tish
+- Foydalanuvchi joylashuviga asoslangan tavsiyalar
+- Ro'yxatdan o'tish va profil
+-Foydalanuvchilar hadma Sog'lomlashtirish maskanlarini bir biri bilan ulash. 
 
-## O'rnatish
+## Texnologiyalar
 
-```bash
-# Node.js va npm o'rnatilgan bo'lishi kerak
-npm install
-```
+**Frontend:**
+- React Native 0.76
+- TypeScript
+- React Navigation
+- Lucide React Native (ikonkalar)
+- React Native Linear Gradient
+- React Native Geolocation Service
+
+**Backend:**
+- Django 6.0 + Django REST Framework
+- Supabase (auth uchun)
+- OpenRouter API (Perplexity Sonar Pro / GPT-4o-mini)
+- SQLite
 
 ## Ishga tushirish
 
 ```bash
-# iOS uchun
-npm run ios
+# Backend
+cd sihhat-ai-backend
+pip install -r requirements.txt
+python manage.py runserver 0.0.0.0:8080
 
-# Android uchun
+# Frontend (yangi terminalda)
+npm install
+npx react-native start
 npm run android
-
-# Web uchun
-npm run web
 ```
+
+## Muhim
+
+- Backend `0.0.0.0:8080` da ishlashi kerak
+- `adb reverse tcp:8080 tcp:8080` (real device uchun)
+- `.env` faylida OpenRouter API kaliti bo'lishi shart
 
 ## Loyiha tuzilmasi
 
 ```
 sihhat-ai/
-├── app/                    # Expo Router sahifalari
-│   ├── _layout.tsx        # Root layout
-│   ├── index.tsx          # Bosh sahifa
-│   └── (tabs)/            # Tab navigatsiya
-│       ├── _layout.tsx    # Tab layout
-│       ├── index.tsx      # Bosh sahifa tab
-│       ├── chat.tsx       # Suhbat tab
-│       ├── health.tsx     # Salomatlik tab
-│       └── profile.tsx    # Profil tab
-├── assets/                # Rasmlar va resurslar
-├── components/            # Qayta ishlatiladigan komponentlar
-├── constants/             # Konstantalar
-├── hooks/                 # Maxsus React hookslar
-└── package.json
+├── App.tsx                 # Asosiy ilova
+├── src/
+│   ├── screens/            # Ekranlar
+│   │   ├── ChatScreen.tsx  # AI chat
+│   │   ├── HealthScreen.tsx# Qidiruv ekrani
+│   │   ├── HomeScreen.tsx  # Bosh sahifa
+│   │   ├── LoginScreen.tsx # Kirish
+│   │   └── ...
+│   └── navigation/         # Navigator
+├── lib/                    # API sozlamalari
+│   ├── auth.ts             # Login/register
+│   ├── chat.ts             # AI chat API
+│   └── location.ts         # Joylashuv
+├── sihhat-ai-backend/      # Django backend
+│   ├── apps/api/views.py   # Chat, health check API
+│   ├── apps/users/views.py # Auth (Supabase)
+│   └── .env                # API kalitlar
+└── assets/                 # Rasmlar
 ```
-
-## Texnologiyalar
-
-- [Expo](https://expo.dev) - React Native framework
-- [Expo Router](https://docs.expo.dev/router/introduction) - File-based navigatsiya
-- [Lucide React Native](https://lucide.dev) - Ikonkalar
-- [React Native Reanimated](https://docs.swmansion.com/react-native-reanimated/) - Animatsiyalar
-
-## Litsenziya
-
-MIT

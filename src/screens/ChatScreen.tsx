@@ -3,9 +3,10 @@ import {
   StyleSheet, View, Text, TextInput, FlatList, TouchableOpacity,
   KeyboardAvoidingView, Platform, Animated, StatusBar, Pressable, Image as RNImage, Linking,
 } from 'react-native';
-import { Send, Sparkle, MapPin, Phone, AlertTriangle, Plus, Image as LucideImage, FileText, X } from 'lucide-react-native';
+import { Send, Sparkle, MapPin, AlertTriangle, Plus, Image as LucideImage, FileText, X, Navigation, Settings } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { sendChatMessage, type ChatResponse, type SanatoriumItem } from '../../lib/chat';
+import { sendChatMessage, type SanatoriumItem } from '../../lib/chat';
+import LinearGradient from 'react-native-linear-gradient';
 
 type Message = {
   id: string;
@@ -16,13 +17,17 @@ type Message = {
   loading?: boolean;
 };
 
+const PLACEHOLDER_IMAGE = 'https://placehold.co/400x200/1B6B3E/FFFFFF?text=Sihhat-AI';
+
 export default function ChatScreen() {
   const [messages, setMessages] = useState<Message[]>([
     { id: '1', text: "Assalomu alaykum! Men Sihhat-AI yordamchisiman. O'zbekistondagi sanatoriyalar haqida ma'lumot bera olaman. Qaysi hududdagi sanatoriyalar sizni qiziqtiradi?", isBot: true },
   ]);
   const [loading, setLoading] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const flatRef = useRef<FlatList>(null);
   const dotAnim = useRef(new Animated.Value(0)).current;
+  const settingsAnim = useRef(new Animated.Value(0)).current;
   const inputVal = useRef('');
 
   useEffect(() => {
@@ -36,6 +41,14 @@ export default function ChatScreen() {
     else animation.reset();
     return () => animation.reset();
   }, [loading, dotAnim]);
+
+  useEffect(() => {
+    Animated.spring(settingsAnim, {
+      toValue: showSettings ? 1 : 0,
+      useNativeDriver: true,
+      friction: 8,
+    }).start();
+  }, [showSettings, settingsAnim]);
 
   const [inputText, setInputText] = useState('');
   const [showAttach, setShowAttach] = useState(false);
@@ -54,20 +67,151 @@ export default function ChatScreen() {
     outputRange: [0.4, 1],
   });
 
+  function newChat() {
+    setMessages([{
+      id: Date.now().toString(),
+      text: "Assalomu alaykum! Men Sihhat-AI yordamchisiman. O'zbekistondagi sanatoriyalar haqida ma'lumot bera olaman. Qaysi hududdagi sanatoriyalar sizni qiziqtiradi?",
+      isBot: true,
+    }]);
+    setShowSettings(false);
+  }
+
+  function clearHistory() {
+    setMessages([]);
+    setShowSettings(false);
+  }
+
+  function handleSend(txt: string) {
+    if (!txt) return;
+    inputVal.current = '';
+    setInputText('');
+    setMessages(prev => [...prev,
+      { id: Date.now().toString(), text: txt, isBot: false },
+      { id: 'loading', isBot: true, loading: true },
+    ]);
+    sendChatMessage(txt).then(res => {
+      setMessages(prev => {
+        const filtered = prev.filter(m => m.id !== 'loading');
+        const newMsg: Message = { id: (Date.now() + 1).toString(), isBot: true };
+        if (res.type === 'sanatorium_list') {
+          newMsg.sanatoriums = res.sanatoriums;
+          newMsg.disclaimer = res.disclaimer;
+        } else if (res.type === 'text') {
+          newMsg.text = res.message;
+        } else {
+          newMsg.text = res.message || 'Javob olindi';
+        }
+        return [...filtered, newMsg];
+      });
+    }).catch(() => {
+      setMessages(prev => prev.filter(m => m.id !== 'loading'));
+    });
+  }
+
+function SanatoriumCard({ s }: { s: SanatoriumItem }) {
+  const [imgErr, setImgErr] = useState(false);
+  const imageUri = (!s.image_url || imgErr) ? PLACEHOLDER_IMAGE : s.image_url;
+
+  return (
+    <View style={cardStyles.wrapper}>
+      <RNImage
+        source={{ uri: imageUri }}
+        style={cardStyles.image}
+        resizeMode="cover"
+        onError={() => setImgErr(true)}
+        defaultSource={{ uri: PLACEHOLDER_IMAGE }}
+      />
+      <Text style={cardStyles.name}>{s.name}</Text>
+      {s.specialty ? (
+        <Text style={cardStyles.specialty}>{s.specialty}</Text>
+      ) : null}
+      <View style={cardStyles.actions}>
+        <TouchableOpacity style={cardStyles.mapBtn} onPress={() => {
+          const url = `https://www.google.com/maps/search/${encodeURIComponent(s.name + ' ' + (s.address || ''))}`;
+          Linking.openURL(url);
+        }}>
+          <Navigation size={16} color="#FFFFFF" strokeWidth={2} />
+          <Text style={cardStyles.mapBtnText}>Xaritada ko'rish</Text>
+        </TouchableOpacity>
+        {s.website ? (
+          <TouchableOpacity style={cardStyles.webBtn} onPress={() => Linking.openURL(s.website!)}>
+            <Text style={cardStyles.webBtnText}>Veb-sayt</Text>
+          </TouchableOpacity>
+        ) : null}
+      </View>
+    </View>
+  );
+}
+
+const cardStyles = StyleSheet.create({
+  wrapper: {
+    backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16, marginBottom: 10,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
+  },
+  image: { width: '100%', height: 180, borderRadius: 12, marginBottom: 12 },
+  name: { fontSize: 17, fontWeight: '700', color: '#111827', marginBottom: 4 },
+  specialty: { fontSize: 13, color: '#6B7280', fontStyle: 'italic', marginBottom: 12, lineHeight: 18 },
+  actions: { gap: 8 },
+  mapBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    backgroundColor: '#1B6B3E', borderRadius: 12, paddingVertical: 12,
+  },
+  mapBtnText: { fontSize: 14, fontWeight: '600', color: '#FFFFFF' },
+  webBtn: {
+    backgroundColor: '#F3F4F6', borderRadius: 12, paddingVertical: 12, alignItems: 'center',
+  },
+  webBtnText: { fontSize: 14, fontWeight: '600', color: '#1B6B3E' },
+});
+
   return (
     <SafeAreaView edges={['bottom']} style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      <View style={styles.header}>
-        <View style={styles.headerRow}>
-          <View style={styles.headerIcon}>
-            <Sparkle size={18} color="#1B6B3E" strokeWidth={2.2} />
+      <StatusBar barStyle="light-content" backgroundColor="#075E45" />
+
+      <LinearGradient colors={['#075E45', '#056B4F', '#0A7A5A']} start={{ x: 0, y: 0 }} end={{ x: 1.2, y: 1.2 }} style={styles.header}>
+        <View style={styles.headerContent}>
+          <View style={styles.headerLeft}>
+            <View style={styles.avatarWrap}>
+              <LinearGradient colors={['#4CAF7C', '#1B6B3E']} style={styles.avatarGradient}>
+                <Sparkle size={22} color="#FFFFFF" strokeWidth={2.2} />
+              </LinearGradient>
+              <View style={styles.onlineDot} />
+            </View>
+            <View>
+              <Text style={styles.headerTitle}>Sihhat-AI</Text>
+              <Text style={styles.headerSub}>Online • Sanatoriyalar bo'yicha yordamchi</Text>
+            </View>
           </View>
-          <View>
-            <Text style={styles.headerTitle}>Sihhat-AI</Text>
-            <Text style={styles.headerSub}>Sanatoriyalar bo'yicha yordamchi</Text>
-          </View>
+          <TouchableOpacity onPress={() => setShowSettings(v => !v)} style={styles.settingsBtn}>
+            <Settings size={22} color="#FFFFFF" strokeWidth={2.2} />
+          </TouchableOpacity>
         </View>
-      </View>
+      </LinearGradient>
+
+      {showSettings && (
+        <Pressable style={StyleSheet.absoluteFill} onPress={() => setShowSettings(false)}>
+          <Animated.View style={[styles.dropdown, { opacity: settingsAnim, transform: [{ scale: settingsAnim.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] }) }] }]}>
+            <TouchableOpacity style={styles.dropdownItem} onPress={newChat}>
+              <View style={[styles.dropdownIcon, { backgroundColor: '#E8F5E9' }]}>
+                <Plus size={18} color="#1B6B3E" strokeWidth={2.5} />
+              </View>
+              <View>
+                <Text style={styles.dropdownText}>Yangi Chat</Text>
+                <Text style={styles.dropdownSub}>Suhbatni qaytadan boshlash</Text>
+              </View>
+            </TouchableOpacity>
+            <View style={styles.dropdownDivider} />
+            <TouchableOpacity style={styles.dropdownItem} onPress={clearHistory}>
+              <View style={[styles.dropdownIcon, { backgroundColor: '#FEE2E2' }]}>
+                <Text style={{ fontSize: 18 }}>🗑</Text>
+              </View>
+              <View>
+                <Text style={[styles.dropdownText, { color: '#EF4444' }]}>Tozalash</Text>
+                <Text style={styles.dropdownSub}>Barcha xabarlarni o'chirish</Text>
+              </View>
+            </TouchableOpacity>
+          </Animated.View>
+        </Pressable>
+      )}
 
       <FlatList<Message>
         ref={flatRef}
@@ -81,13 +225,7 @@ export default function ChatScreen() {
               <View style={[styles.bubble, styles.botBubble, styles.thinkingRow]}>
                 <View style={styles.thinkingDot} />
                 {[0, 1, 2].map(i => (
-                  <Animated.View
-                    key={i}
-                    style={[
-                      styles.dot,
-                      { transform: [{ scale: dotScale }], opacity: dotAnim },
-                    ]}
-                  />
+                  <Animated.View key={i} style={[styles.dot, { transform: [{ scale: dotScale }], opacity: dotAnim }]} />
                 ))}
               </View>
             );
@@ -96,49 +234,13 @@ export default function ChatScreen() {
           if (item.sanatoriums) {
             return (
               <View style={styles.botBlock}>
-                {item.sanatoriums.map((s, i) => (
-                  <View key={i} style={styles.card}>
-                    {s.image_url ? (
-                      <RNImage source={{ uri: s.image_url }} style={styles.cardImage} resizeMode="cover" />
-                    ) : null}
-                    <View style={styles.cardHeader}>
-                      <Text style={styles.cardName}>{s.name}</Text>
-                      <View style={styles.distanceBadge}>
-                        <MapPin size={12} color="#1B6B3E" strokeWidth={2.5} />
-                        <Text style={styles.distanceText}>{s.distance}</Text>
-                      </View>
-                    </View>
-                    <Text style={styles.cardAddress}>{s.address}</Text>
-                    {s.phone ? (
-                      <View style={styles.cardRow}>
-                        <Phone size={14} color="#6B7280" strokeWidth={2} />
-                        <Text style={styles.cardPhone}>{s.phone}</Text>
-                      </View>
-                    ) : null}
-                    {s.owner ? (
-                      <Text style={styles.cardOwner}>Egasining ismi: {s.owner}</Text>
-                    ) : null}
-                    <Text style={styles.cardSpecialty}>Yo'nalishi: {s.specialty}</Text>
-                    <TouchableOpacity style={styles.mapBtn} onPress={() => {
-                      const url = `https://www.google.com/maps/search/${encodeURIComponent(s.name + ' ' + (s.address || ''))}`;
-                      Linking.openURL(url);
-                    }}>
-                      <MapPin size={16} color="#FFFFFF" strokeWidth={2} />
-                      <Text style={styles.mapBtnText}>Xaritada ko'rish</Text>
-                    </TouchableOpacity>
-                    {s.website ? (
-                      <TouchableOpacity style={styles.webBtn} onPress={() => Linking.openURL(s.website!)}>
-                        <Text style={styles.webBtnText}>Veb-sayt</Text>
-                      </TouchableOpacity>
-                    ) : null}
-                  </View>
-                ))}
-                {item.disclaimer && (
+                {item.sanatoriums.map(s => <SanatoriumCard key={s.name} s={s} />)}
+                {item.disclaimer ? (
                   <View style={styles.disclaimer}>
                     <AlertTriangle size={14} color="#F59E0B" strokeWidth={2} />
                     <Text style={styles.disclaimerText}>{item.disclaimer}</Text>
                   </View>
-                )}
+                ) : null}
               </View>
             );
           }
@@ -153,10 +255,7 @@ export default function ChatScreen() {
         }}
       />
 
-      <KeyboardAvoidingView
-        behavior="padding"
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
-      >
+      <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}>
         <View style={styles.inputBar}>
           {showAttach && (
             <Animated.View style={[styles.attachRow, { opacity: attachAnim }]}>
@@ -173,15 +272,8 @@ export default function ChatScreen() {
             </Animated.View>
           )}
           <View style={styles.inputRow}>
-            <Pressable
-              onPress={() => setShowAttach(v => !v)}
-              style={[styles.plusBtn, showAttach && styles.plusBtnActive]}
-            >
-              {showAttach ? (
-                <X size={20} color="#FFFFFF" strokeWidth={2.5} />
-              ) : (
-                <Plus size={20} color="#1B6B3E" strokeWidth={2.5} />
-              )}
+            <Pressable onPress={() => setShowAttach(v => !v)} style={[styles.plusBtn, showAttach && styles.plusBtnActive]}>
+              {showAttach ? <X size={20} color="#FFFFFF" strokeWidth={2.5} /> : <Plus size={20} color="#1B6B3E" strokeWidth={2.5} />}
             </Pressable>
             <TextInput
               style={styles.input}
@@ -189,56 +281,14 @@ export default function ChatScreen() {
               placeholderTextColor="#9CA3AF"
               value={inputText}
               onChangeText={t => { inputVal.current = t; setInputText(t); }}
-              onSubmitEditing={() => {
-                const txt = inputVal.current.trim();
-                if (!txt) return;
-                inputVal.current = '';
-                setInputText('');
-                setMessages(prev => [...prev,
-                  { id: Date.now().toString(), text: txt, isBot: false },
-                  { id: 'loading', isBot: true, loading: true },
-                ]);
-                sendChatMessage(txt).then(res => {
-                  setMessages(prev => {
-                    const filtered = prev.filter(m => m.id !== 'loading');
-                    return [...filtered, {
-                      id: (Date.now() + 1).toString(),
-                      text: (res as any).message || 'Javob olindi',
-                      isBot: true,
-                    }];
-                  });
-                }).catch(() => {
-                  setMessages(prev => prev.filter(m => m.id !== 'loading'));
-                });
-              }}
+              onSubmitEditing={() => handleSend(inputVal.current.trim())}
               returnKeyType="send"
               editable={!loading}
               autoCapitalize="sentences"
             />
             <Pressable
               style={[styles.sendBtn, (!inputVal.current.trim() || loading) && styles.sendBtnDisabled]}
-              onPress={() => {
-                const txt = inputVal.current.trim();
-                if (!txt) return;
-                inputVal.current = '';
-                setInputText('');
-                setMessages(prev => [...prev,
-                  { id: Date.now().toString(), text: txt, isBot: false },
-                  { id: 'loading', isBot: true, loading: true },
-                ]);
-                sendChatMessage(txt).then(res => {
-                  setMessages(prev => {
-                    const filtered = prev.filter(m => m.id !== 'loading');
-                    return [...filtered, {
-                      id: (Date.now() + 1).toString(),
-                      text: (res as any).message || 'Javob olindi',
-                      isBot: true,
-                    }];
-                  });
-                }).catch(() => {
-                  setMessages(prev => prev.filter(m => m.id !== 'loading'));
-                });
-              }}
+              onPress={() => handleSend(inputVal.current.trim())}
             >
               <Send size={18} color="#FFFFFF" strokeWidth={2.2} />
             </Pressable>
@@ -252,19 +302,55 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F2F6F4' },
   header: {
-    backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    paddingTop: Platform.OS === 'ios' ? 0 : 12,
+    paddingBottom: 14,
   },
-  headerRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  headerIcon: {
-    width: 36, height: 36, borderRadius: 18,
-    backgroundColor: '#E8F5E9', alignItems: 'center', justifyContent: 'center',
+  headerContent: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
   },
-  headerTitle: { fontSize: 16, fontWeight: '700', color: '#111827' },
-  headerSub: { fontSize: 11, color: '#6B7280', marginTop: 1 },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  avatarWrap: {
+    width: 44, height: 44, borderRadius: 22, position: 'relative',
+  },
+  avatarGradient: {
+    width: 44, height: 44, borderRadius: 22,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)',
+  },
+  onlineDot: {
+    position: 'absolute', bottom: 0, right: 0,
+    width: 12, height: 12, borderRadius: 6,
+    backgroundColor: '#4ADE80',
+    borderWidth: 2, borderColor: '#075E45',
+  },
+  headerTitle: { fontSize: 17, fontWeight: '700', color: '#FFFFFF' },
+  headerSub: { fontSize: 11, color: 'rgba(255,255,255,0.7)', marginTop: 1 },
+  settingsBtn: {
+    width: 42, height: 42, borderRadius: 21,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
+  },
+  dropdown: {
+    position: 'absolute', top: Platform.OS === 'ios' ? 64 : 58, right: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20, paddingVertical: 6, minWidth: 220,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15, shadowRadius: 24, elevation: 12,
+    zIndex: 999,
+  },
+  dropdownItem: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingVertical: 10, paddingHorizontal: 16,
+  },
+  dropdownIcon: {
+    width: 34, height: 34, borderRadius: 10,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  dropdownText: { fontSize: 15, fontWeight: '600', color: '#1B6B3E' },
+  dropdownSub: { fontSize: 11, color: '#9CA3AF', marginTop: 1 },
+  dropdownDivider: { height: 1, backgroundColor: '#F3F4F6', marginHorizontal: 12 },
   list: { flex: 1, paddingHorizontal: 16, paddingTop: 12 },
   bubble: { maxWidth: '82%', padding: 14, borderRadius: 16, marginBottom: 10 },
   botBubble: {
@@ -295,17 +381,19 @@ const styles = StyleSheet.create({
   },
   distanceText: { fontSize: 12, fontWeight: '600', color: '#1B6B3E' },
   cardImage: { width: '100%', height: 160, borderRadius: 10, marginBottom: 10 },
-  cardAddress: { fontSize: 13, color: '#6B7280', marginBottom: 6 },
+  cardAddress: { fontSize: 13, color: '#6B7280', marginBottom: 4 },
   cardRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
-  cardPhone: { fontSize: 14, color: '#374151', fontWeight: '500' },
-  cardOwner: { fontSize: 12, color: '#6B7280', marginBottom: 4, fontStyle: 'italic' },
-  cardSpecialty: { fontSize: 12, color: '#6B7280', marginBottom: 10 },
+  cardMeta: { fontSize: 13, color: '#374151' },
+  cardSpecialty: { fontSize: 12, color: '#6B7280', marginBottom: 4, fontStyle: 'italic' },
+  cardHours: { fontSize: 12, color: '#6B7280', marginBottom: 4 },
+  cardPrice: { fontSize: 12, color: '#1B6B3E', fontWeight: '600', marginBottom: 4 },
+  cardActions: { marginTop: 8, gap: 6 },
   mapBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     backgroundColor: '#1B6B3E', borderRadius: 12, paddingVertical: 10,
   },
   mapBtnText: { fontSize: 14, fontWeight: '600', color: '#FFFFFF' },
-  webBtn: { marginTop: 6, backgroundColor: '#F3F4F6', borderRadius: 10, paddingVertical: 8, alignItems: 'center' },
+  webBtn: { backgroundColor: '#F3F4F6', borderRadius: 10, paddingVertical: 8, alignItems: 'center' },
   webBtnText: { fontSize: 13, fontWeight: '600', color: '#1B6B3E' },
   disclaimer: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 6,

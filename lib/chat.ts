@@ -1,4 +1,4 @@
-const API_BASE = 'http://127.0.0.1:8080/api'; // adb reverse tcp:8080 tcp:8080
+const API_BASE = 'http://127.0.0.1:8080/api';
 const TIMEOUT = 30000;
 
 export type ChatResponse =
@@ -21,10 +21,16 @@ export type SanatoriumItem = {
   address: string;
   phone: string;
   distance: string;
+  travel_time?: string;
   specialty: string;
   website?: string;
   owner?: string;
   image_url?: string;
+  latitude?: number;
+  longitude?: number;
+  working_hours?: string;
+  price?: string;
+  rating?: string;
 };
 
 export async function sendChatMessage(message: string): Promise<ChatResponse> {
