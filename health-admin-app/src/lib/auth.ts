@@ -5,6 +5,7 @@ export type AdminSession = {
   username: string;
   display_name: string;
   sanatory_id: number;
+  sanatorium_name: string | null;
 };
 
 const SESSION_KEY = 'health_admin_session';
@@ -14,9 +15,11 @@ export async function login(username: string, password: string): Promise<{ user?
   if (!trimmed || !password) {
     return { error: "Login yoki parol noto'g'ri." };
   }
+  // sanatoriums(name) — sanatory_id orqali bog'langan sanatoriya nomini ham
+  // birga olamiz, buyurtmalarni nom bo'yicha ham moslashtirish uchun kerak.
   const { data, error } = await supabase
     .from('admins')
-    .select('username, password, display_name, sanatory_id')
+    .select('username, password, display_name, sanatory_id, sanatoriums(name)')
     .eq('username', trimmed)
     .maybeSingle();
 
@@ -25,10 +28,13 @@ export async function login(username: string, password: string): Promise<{ user?
     return { error: "Login yoki parol noto'g'ri." };
   }
 
+  const sanatoriumRel = Array.isArray(data.sanatoriums) ? data.sanatoriums[0] : data.sanatoriums;
+
   const user: AdminSession = {
     username: data.username,
     display_name: data.display_name,
     sanatory_id: data.sanatory_id,
+    sanatorium_name: (sanatoriumRel as { name: string } | null)?.name ?? null,
   };
   await AsyncStorage.setItem(SESSION_KEY, JSON.stringify(user));
   return { user };

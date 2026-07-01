@@ -15,7 +15,16 @@
       "bundleIdentifier": "uz.sihhatai.healthadmin"
     },
     "android": {
-      "package": "uz.sihhatai.healthadmin"
-    }
+      "package": "uz.sihhatai.healthadmin",
+      "permissions": ["NOTIFICATIONS"]
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "color": "#075E45"
+        }
+      ]
+    ]
   }
 }

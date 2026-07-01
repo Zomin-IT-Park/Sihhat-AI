@@ -30,12 +30,14 @@ export default function OrdersScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [sanatoriumName, setSanatoriumName] = useState<string | null>(null);
 
   const load = useCallback(async (isRefresh = false) => {
     isRefresh ? setRefreshing(true) : setLoading(true);
     const session = await getSession();
     if (session) {
-      const { data } = await getBookingsBySanatoryId(session.sanatory_id);
+      setSanatoriumName(session.sanatorium_name);
+      const { data } = await getBookingsBySanatoryId(session.sanatory_id, session.sanatorium_name);
       setBookings(data);
     }
     isRefresh ? setRefreshing(false) : setLoading(false);
@@ -56,11 +58,29 @@ export default function OrdersScreen() {
     setApprovingId(null);
   }
 
+  const pendingCount = bookings.filter((b) => b.status === 'Kutilmoqda').length;
+  const approvedCount = bookings.filter((b) => b.status === 'Qabul qilindi').length;
+
   return (
     <SafeAreaView edges={['top']} style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#075E45" />
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Buyurtmalarim</Text>
+        {sanatoriumName ? <Text style={styles.headerSub}>{sanatoriumName}</Text> : null}
+
+        {!loading && bookings.length > 0 ? (
+          <View style={styles.statsRow}>
+            <View style={styles.statCard}>
+              <Text style={styles.statValue}>{pendingCount}</Text>
+              <Text style={styles.statLabel}>Kutilmoqda</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statCard}>
+              <Text style={styles.statValue}>{approvedCount}</Text>
+              <Text style={styles.statLabel}>Qabul qilindi</Text>
+            </View>
+          </View>
+        ) : null}
       </View>
 
       {loading ? (
@@ -133,8 +153,18 @@ export default function OrdersScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F2F6F4' },
-  header: { backgroundColor: '#075E45', paddingHorizontal: 20, paddingVertical: 16 },
+  header: { backgroundColor: '#075E45', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 18 },
   headerTitle: { fontSize: 19, fontWeight: '800', color: '#FFFFFF' },
+  headerSub: { fontSize: 12.5, color: 'rgba(255,255,255,0.75)', marginTop: 2 },
+  statsRow: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 14,
+    marginTop: 14, paddingVertical: 10,
+  },
+  statCard: { flex: 1, alignItems: 'center' },
+  statValue: { fontSize: 18, fontWeight: '800', color: '#FFFFFF' },
+  statLabel: { fontSize: 11, color: 'rgba(255,255,255,0.75)', marginTop: 2, fontWeight: '600' },
+  statDivider: { width: 1, height: 28, backgroundColor: 'rgba(255,255,255,0.2)' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 80, paddingHorizontal: 32 },
   emptyTitle: { fontSize: 16, fontWeight: '700', color: '#374151', marginTop: 14 },
   card: {

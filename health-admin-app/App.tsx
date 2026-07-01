@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import RootNavigator from './src/navigation';
 import { getSession } from './src/lib/auth';
+import { requestNotificationPermission } from './src/lib/notifications';
 
 export default function App() {
   const [checking, setChecking] = useState(true);
@@ -17,6 +18,7 @@ export default function App() {
       setInitialRoute(session ? 'AdminTabs' : 'Login');
       setChecking(false);
     });
+    requestNotificationPermission();
   }, []);
 
   if (checking) {
