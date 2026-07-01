@@ -1,32 +1,43 @@
-# Dependencies
-node_modules/
 
-# Build outputs
-android/app/build/
-android/build/
-android/.gradle/
-ios/
+**/node_modules/
+
+**/android/app/build/
+**/android/build/
+**/android/.gradle/
+**/android/.cxx/
+**/android/app/.cxx/
+**/android/local.properties
+
+
+**/ios/Pods/
+**/ios/build/
+
+
+**/.expo/
+**/.expo-shared/
+**/web-build/
+
+
 .metro-health-check*
-metro-cache/
+**/metro-cache/
 
-# Python
-__pycache__/
-*.pyc
-*.pyo
 
-# Database
-db.sqlite3
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/db.sqlite3
+**/staticfiles/
+**/static/
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
 
-# OS
-.DS_Store
-Thumbs.db
+**/.vscode/
+**/.idea/
+**/*.swp
+**/*.swo
 
-# Logs
-*.log
-npm-debug.log*
+**/.DS_Store
+**/Thumbs.db
+
+
+**/*.log
+**/npm-debug.log*

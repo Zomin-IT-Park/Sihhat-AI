@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { StatusBar } from 'expo-status-bar';
 
 import RootNavigator from './src/navigation';
 import { getSession } from './src/lib/auth';
@@ -32,7 +31,7 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <StatusBar style="light" />
+        <StatusBar barStyle="light-content" />
         <NavigationContainer>
           <RootNavigator initialRoute={initialRoute} />
         </NavigationContainer>

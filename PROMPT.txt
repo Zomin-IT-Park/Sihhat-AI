@@ -1,7 +1,0 @@
-
-
-## MUHIM:
-- Expo Go orqali ishlatma (npx react-native run-android qilib ishlatish kerak chunarlimi)
-- 
-
-LOYIHA: C:\Users\0091\Desktop\sihhat-ai

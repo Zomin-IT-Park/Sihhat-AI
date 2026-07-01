@@ -67,6 +67,50 @@ def register_view(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+def profile_view(request):
+    """Foydalanuvchi profilini (ism, familiya, username, ixtiyoriy parol)
+    yangilaydi. Mobil ilova (lib/auth.ts -> updateProfile) shu endpointga
+    murojaat qiladi. Supabase'dagi update_user_profile RPC funksiyasini
+    talab qiladi (qarang: supabase/update_user_profile.sql)."""
+    client = get_supabase()
+    if not client:
+        return Response({'error': 'Supabase not configured'}, status=503)
+
+    user_id = request.data.get('id', '')
+    if not user_id:
+        return Response({'error': "Foydalanuvchi ID'si topilmadi"}, status=400)
+
+    params = {
+        'p_id': user_id,
+        'p_first_name': request.data.get('first_name', ''),
+        'p_last_name': request.data.get('last_name', ''),
+        'p_username': request.data.get('username', ''),
+    }
+    password = request.data.get('password')
+    if password:
+        params['p_password'] = password
+
+    result = _call_rpc(client, 'update_user_profile', params)
+
+    if result is None:
+        return Response({'error': 'Xatolik yuz berdi'}, status=500)
+
+    error = result.get('error')
+    if error:
+        return Response({'error': error}, status=400)
+
+    return Response({
+        'user': {
+            'id': result.get('id'),
+            'username': result.get('username'),
+            'first_name': result.get('first_name'),
+            'last_name': result.get('last_name'),
+        }
+    })
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def verify_view(request):
     client = get_supabase()
     if not client:

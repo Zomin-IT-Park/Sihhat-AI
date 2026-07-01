@@ -1,34 +1,30 @@
-import * as Notifications from 'expo-notifications';
-import * as Device from 'expo-device';
-import { Platform } from 'react-native';
+import { PermissionsAndroid, Platform } from 'react-native';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
-});
-
-// Ilova ochilganda bildirishnoma ruxsatini so'raydi. Fizik qurilmada
-// ishlaydi (simulyator/emulyatorda ruxsat so'ralmaydi).
+// Ilova ochilganda bildirishnoma ruxsatini so'raydi. Android 13+ (API 33+)
+// runtime'da alohida ruxsat talab qiladi; undan pastki versiyalarda
+// ruxsat avtomatik berilgan hisoblanadi. iOS uchun bu loyihada alohida
+// native modul ulanmagani sababli hozircha faqat Android qo'llab-quvvatlanadi.
 export async function requestNotificationPermission(): Promise<boolean> {
-  if (!Device.isDevice) return false;
+  if (Platform.OS !== 'android') return false;
 
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
-
-  if (existingStatus !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
+  if (Platform.Version < 33) {
+    // Android 12 va pastda POST_NOTIFICATIONS ruxsati mavjud emas -
+    // bildirishnomalar standart holda ruxsat etilgan.
+    return true;
   }
 
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'default',
-      importance: Notifications.AndroidImportance.DEFAULT,
-    });
+  try {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+      {
+        title: 'Bildirishnomalar',
+        message: 'Yangi buyurtmalar haqida xabar olish uchun bildirishnomalarga ruxsat bering.',
+        buttonPositive: 'Ruxsat berish',
+        buttonNegative: 'Bekor qilish',
+      },
+    );
+    return granted === PermissionsAndroid.RESULTS.GRANTED;
+  } catch {
+    return false;
   }
-
-  return finalStatus === 'granted';
 }
